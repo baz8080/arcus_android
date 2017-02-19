@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
+          package="com.arcuscomputing.dictionarypro.parent"
+    >
+
+    <uses-permission tools:node="remove" android:name="android.permission.INTERNET"  />
+    <uses-permission tools:node="remove" android:name="android.permission.ACCESS_NETWORK_STATE"  />
+    <uses-permission tools:node="remove" android:name="android.permission.WAKE_LOCK" />
+    <uses-permission tools:node="remove" android:name="com.google.android.c2dm.permission.RECEIVE" />
+    <uses-permission tools:node="remove" android:name="${applicationId}.permission.C2D_MESSAGE" />
+
+</manifest>

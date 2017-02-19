@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <CheckBoxPreference
+        android:key="alphasort"
+        android:summary="@string/pref.alpha_sort_summary"
+        android:title="@string/pref.alpha_sort_title"/>
+
+    <CheckBoxPreference
+        android:key="autocorrect"
+        android:summary="@string/pref.autocorrect_summary"
+        android:title="@string/pref.autocorrect_title"/>
+
+    <CheckBoxPreference
+        android:key="lang"
+        android:summary="@string/pref.lang_summary"
+        android:title="@string/pref.lang_title"/>
+
+    <CheckBoxPreference
+        android:key="web"
+        android:summary="@string/pref.web_summary"
+        android:title="@string/pref.web_title"/>
+
+    <CheckBoxPreference
+        android:key="@string/pref.adult_key"
+        android:summary="@string/pref.adult_summary"
+        android:title="@string/pref.adult_title"/>
+
+</PreferenceScreen>
