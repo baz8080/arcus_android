@@ -1,4 +1,4 @@
-package com.arcuscomputing.models;
+package com.arcuscomputing;
 
 import android.support.annotation.NonNull;
 
@@ -22,19 +22,19 @@ public class WordModel implements Comparable<WordModel> {
         this(word, definition, tagCount, "", "");
     }
 
-    public WordModel() {
+    WordModel() {
         this("", "", 0, "", "");
     }
 
-    public String getType() {
+    String getType() {
         return type;
     }
 
-    public void setType(String type) {
+    void setType(String type) {
         this.type = type;
     }
 
-    public String getSynonyms() {
+    String getSynonyms() {
         return synonyms;
     }
 
@@ -42,7 +42,7 @@ public class WordModel implements Comparable<WordModel> {
         return word;
     }
 
-    public void setWord(String word) {
+    void setWord(String word) {
         this.word = word;
     }
 
@@ -50,22 +50,16 @@ public class WordModel implements Comparable<WordModel> {
         return definition;
     }
 
-    public void setDefinition(String definition) {
+    void setDefinition(String definition) {
         this.definition = definition;
     }
 
-    public int getTagCount() {
+    int getTagCount() {
         return tagCount;
     }
 
     @Override
     public int compareTo(@NonNull WordModel another) {
-        if (this.tagCount < another.tagCount) {
-            return 1;
-        } else if (this.tagCount == another.tagCount) {
-            return 0;
-        } else {
-            return -1;
-        }
+        return Integer.compare(another.tagCount, this.tagCount);
     }
 }

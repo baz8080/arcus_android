@@ -7,7 +7,7 @@ import android.view.MenuItem;
 
 import com.arcuscomputing.dictionary.ArcusSearchActivity;
 import com.arcuscomputing.dictionary.menu.IArcusMenu;
-import com.arcuscomputing.dictionarypro.parent.R;
+import com.arcuscomputing.dictionarypro.ads.R;
 
 
 public class ArcusMenu implements IArcusMenu {
@@ -62,9 +62,6 @@ public class ArcusMenu implements IArcusMenu {
         menu.add(MENUGROUP_INFO, MENU_EMAIL_FAVOURITES, MENU_EMAIL_FAVOURITES_INDEX, getString(R.string.menu_email_favourites))
                 .setIcon(android.R.drawable.ic_menu_send);
 
-        menu.add(MENUGROUP_INFO, MENU_BACKUP, MENU_EMAIL_BACKUP_INDEX, "Backup & Restore")
-                .setIcon(android.R.drawable.ic_menu_send);
-
         return true;
     }
 
@@ -100,8 +97,6 @@ public class ArcusMenu implements IArcusMenu {
         menu.getItem(MENU_EMAIL_FAVOURITES_INDEX).setEnabled(visible);
         menu.getItem(MENU_EMAIL_FAVOURITES_INDEX).setVisible(visible);
 
-        menu.getItem(MENU_EMAIL_BACKUP_INDEX).setEnabled(visible);
-        menu.getItem(MENU_EMAIL_BACKUP_INDEX).setVisible(visible);
     }
 
     @Override
@@ -133,9 +128,6 @@ public class ArcusMenu implements IArcusMenu {
                 return true;
             case MENU_RANDOM:
                 activity.handleRandom();
-                return true;
-            case MENU_BACKUP:
-                activity.handleBackup();
                 return true;
         }
 

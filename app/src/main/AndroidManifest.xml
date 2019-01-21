@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.arcuscomputing.dictionarypro.parent"
+          package="com.arcuscomputing.dictionarypro.ads"
           android:installLocation="auto"
           android:versionCode="231"
           android:versionName="2.3.1" >
-
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 
     <application
         android:icon="@mipmap/ic_launcher"
@@ -39,24 +35,6 @@
             android:name="com.arcuscomputing.dictionary.ArcusFavouritesActivity"
             android:label="@string/app_name" >
         </activity>
-
-        <receiver android:name="com.arcuscomputing.dictionary.ArcusWotdWidget" >
-
-            <intent-filter>
-
-                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.appwidget.provider"
-                android:resource="@xml/arcus_wotd" />
-        </receiver>
-        
-        <activity android:name="com.arcuscomputing.dictionary.BackupActivity"
-        	android:label="@string/app_name">
-		</activity>
-
-        <service android:name="com.arcuscomputing.dictionary.ArcusWotdWidget$UpdateService" />
 
     </application>
 

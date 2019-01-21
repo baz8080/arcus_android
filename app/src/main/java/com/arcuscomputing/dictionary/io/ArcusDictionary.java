@@ -1,9 +1,9 @@
 package com.arcuscomputing.dictionary.io;
 
+import android.content.Context;
 import android.text.TextUtils;
 
-import com.arcuscomputing.dictionary.DictionaryConstants;
-import com.arcuscomputing.models.WordModel;
+import com.arcuscomputing.WordModel;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -44,19 +44,15 @@ public class ArcusDictionary {
         this.dataFileManager = dfm;
     }
 
-    public DataFileManager getDataFileManager() {
-        return this.dataFileManager;
-    }
-
-    public synchronized void ensureLoaded(String packagePath, boolean quick) {
+    public synchronized void ensureLoaded(Context context) {
         if (loaded) {
             return;
         }
 
-        initDatabases(packagePath, quick);
+        initDatabases(context);
     }
 
-    private synchronized void initDatabases(String packagePath, boolean quick) {
+    private synchronized void initDatabases(Context context) {
 
         if (loaded) {
             return;
@@ -66,18 +62,18 @@ public class ArcusDictionary {
 
         if (!(dataFileManager.indexFileExists() && dataFileManager.dataFileExists())) {
             // copy required files if we can write
-            if (dataFileManager.extractRequiredFiles(packagePath)) {
+            if (dataFileManager.extractRequiredFiles(context)) {
 
                 dataFilesExist = true;
             }
         } else {
             // exist already, need to check MD5s
 
-            if ((quick && dataFileManager.quickCheck()) || dataFileManager.hashesAreOk()) {
+            if (dataFileManager.hashesAreOk()) {
                 dataFilesExist = true;
             } else {
 
-                if (dataFileManager.extractRequiredFiles(packagePath)) {
+                if (dataFileManager.extractRequiredFiles(context)) {
                     dataFilesExist = true;
                 }
             }
@@ -98,53 +94,13 @@ public class ArcusDictionary {
         loaded = dataFilesExist;
     }
 
-    public synchronized WordModel getWordOfTheDay(boolean adultFilter) {
-        WordModel wm = new WordModel("Error", "There was an error getting the word of the day", 1);
 
-        ReadRandom wordDefinitions;
-        ReadRandom wordIndex;
-
-        try {
-            wordDefinitions = new ReadRandom(dataFileManager.getDataFile(), "r");
-            wordIndex = new ReadRandom(dataFileManager.getIndexFile(), "r");
-        } catch (IOException e) {
-
-            return wm;
-        }
-
-        List<WordModel> randoms = doRandomWords(wordIndex, wordDefinitions);
-
-        for (WordModel candidate : randoms) {
-
-            if (adultFilter) {
-
-                if (!DictionaryConstants.adultWords.contains(candidate.getWord())) {
-                    wm = candidate;
-                    break;
-                }
-
-            } else {
-                wm = candidate;
-                break;
-            }
-
-        }
-
-        try {
-            wordDefinitions.close();
-            wordIndex.close();
-        } catch (IOException e) {
-            Timber.e(e, "Unexpected error in getWordOfTheDay");
-        }
-
-        return wm;
-    }
 
     public synchronized List<WordModel> getRandom() {
         return getRandom(20, 10);
     }
 
-    public synchronized List<WordModel> getRandom(int maxJump, int maxListSize) {
+    synchronized List<WordModel> getRandom(int maxJump, int maxListSize) {
 
         if (!checkFiles()) {
             return Collections.emptyList();
@@ -176,38 +132,6 @@ public class ArcusDictionary {
         }
 
         return list;
-    }
-
-    private synchronized List<WordModel> doRandomWords(ReadRandom index, ReadRandom defs) {
-
-        List<WordModel> randomList = new LinkedList<>();
-
-        try {
-            long length = index.length();
-            long randomStart;
-            Random random = new Random(System.currentTimeMillis());
-            boolean found = false;
-
-            for (int i = 0; i < 20 && !found; i++) {
-                randomStart = Math.abs(random.nextLong() % length);
-                index.seek(randomStart);
-                String line;
-
-                if (index.readLine() != null && ((line = index.readLine()) != null)) {
-                    Matcher m = p.matcher(line);
-
-                    if (m.matches()) {
-                        addResultToList(line, randomList, defs);
-                        found = true;
-                    }
-                }
-            }
-        } catch (IOException e) {
-            Timber.e(e, "Unexpected error in doRandomWords");
-            return Collections.emptyList();
-        }
-
-        return randomList;
     }
 
     @SuppressWarnings("unchecked")

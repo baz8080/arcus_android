@@ -3,7 +3,7 @@ package com.arcuscomputing.dictionary;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 
-import com.arcuscomputing.dictionarypro.parent.R;
+import com.arcuscomputing.dictionarypro.ads.R;
 
 
 public class EditPreferencesActivity extends PreferenceActivity {

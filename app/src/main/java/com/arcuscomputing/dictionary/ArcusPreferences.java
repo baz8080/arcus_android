@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-public class ArcusPreferences {
+class ArcusPreferences {
 
     private final static String ALPHA_SORT_KEY = "alphasort";
 
@@ -17,31 +17,31 @@ public class ArcusPreferences {
 
     private final SharedPreferences preferences;
 
-    public ArcusPreferences(Context context) {
+    ArcusPreferences(Context context) {
         preferences = PreferenceManager.getDefaultSharedPreferences(context);
     }
 
-    public boolean isPureAlpha() {
+    boolean isPureAlpha() {
         return preferences.getBoolean(ALPHA_SORT_KEY, false);
     }
 
-    public boolean isMoneyWarningShown() {
+    boolean isMoneyWarningShown() {
         return preferences.getBoolean(MONEY_WARNING_KEY, false);
     }
 
-    public void setMoneyWarningShown() {
+    void setMoneyWarningShown() {
         preferences.edit().putBoolean(MONEY_WARNING_KEY, true).apply();
     }
 
-    public boolean useUSEnglish() {
+    boolean useUSEnglish() {
         return preferences.getBoolean(LANG_KEY, false);
     }
 
-    public boolean useAutoCorrect() {
+    boolean useAutoCorrect() {
         return preferences.getBoolean(LANG_KEY, false);
     }
 
-    public boolean isInternetDisabled() {
+    boolean isInternetDisabled() {
         return preferences.getBoolean(WEB_KEY, false);
     }
 }

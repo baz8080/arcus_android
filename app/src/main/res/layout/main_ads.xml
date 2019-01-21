@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:ads="http://schemas.android.com/apk/res-auto"
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -34,14 +32,6 @@
             app:srcCompat="@drawable/ic_mic_white_24dp"/>
     </LinearLayout>
 
-    <com.google.android.gms.ads.AdView
-        android:id="@+id/adView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        ads:adSize="BANNER"
-        ads:adUnitId="@string/ad_unit_id"/>
-
-
     <ListView
         android:id="@+id/lvQuickResults"
         android:layout_width="fill_parent"
@@ -49,7 +39,7 @@
         android:clickable="true"
         android:paddingLeft="2dip"
         android:paddingRight="2dip"
-        />
+        android:focusable="true" />
 
 </LinearLayout>
 

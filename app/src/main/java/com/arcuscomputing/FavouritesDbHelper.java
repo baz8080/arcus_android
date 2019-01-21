@@ -1,12 +1,10 @@
-package com.arcuscomputing.db;
+package com.arcuscomputing;
 
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteStatement;
-
-import com.arcuscomputing.models.WordModel;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -67,14 +65,14 @@ public class FavouritesDbHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public synchronized void insertfavourite(String word, String definition) {
+    synchronized void insertfavourite(String word, String definition) {
 
         this.insertStatement.bindString(1, word);
         this.insertStatement.bindString(2, definition);
         this.insertStatement.execute();
     }
 
-    public synchronized boolean isFavourite(String word, String definition) {
+    synchronized boolean isFavourite(String word, String definition) {
 
         Cursor result = db.rawQuery(FAVOURITE_QUERY, getArgsFromWordAndDef(word, definition));
 
@@ -93,7 +91,7 @@ public class FavouritesDbHelper extends SQLiteOpenHelper {
         return args;
     }
 
-    public synchronized boolean deleteFromFavourites(String word, String definition) {
+    synchronized boolean deleteFromFavourites(String word, String definition) {
         Cursor cursor = db.rawQuery(DELETE_FAVOURITE_QUERY, getArgsFromWordAndDef(word, definition));
         int count = cursor.getCount();
         cursor.close();
@@ -104,7 +102,7 @@ public class FavouritesDbHelper extends SQLiteOpenHelper {
 
     public synchronized List<WordModel> getAllFavourites(String sortMethod) {
         Cursor cursor = db.rawQuery(ALL_FAVOURITES_QUERY + sortMethod, null);
-        List<WordModel> results = new LinkedList<WordModel>();
+        List<WordModel> results = new LinkedList<>();
 
         while (cursor.moveToNext()) {
             WordModel wm = new WordModel();
@@ -120,8 +118,6 @@ public class FavouritesDbHelper extends SQLiteOpenHelper {
 
     public synchronized void deleteAllFavourites() {
         Cursor cursor = db.rawQuery(DELETE_ALL_FAVOURITES_QUERY, null);
-        int count = cursor.getCount();
         cursor.close();
     }
-
 }	
