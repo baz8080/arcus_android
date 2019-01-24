@@ -21,8 +21,6 @@ public interface IArcusMenu {
     int MENU_CLEAR_FAVOURITES = 7;
     int MENU_EMAIL_FAVOURITES = 8;
 
-    int MENU_BACKUP = 9;
-
     //MENU ORDER
     int MENU_SEARCH_INDEX = 0;
     int MENU_FAVOURITES_INDEX = 1;
@@ -35,8 +33,6 @@ public interface IArcusMenu {
     int MENU_DATE_SORT_INDEX = 6;
     int MENU_CLEAR_FAVOURITES_INDEX = 7;
     int MENU_EMAIL_FAVOURITES_INDEX = 8;
-
-    int MENU_EMAIL_BACKUP_INDEX = 9;
 
     // MENU GROUP
     int MENUGROUP_INFO = 0;

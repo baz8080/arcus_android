@@ -40,16 +40,14 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.arcuscomputing.ArcusApplication;
-import com.arcuscomputing.adapters.QuickResultListAdapter;
-import com.arcuscomputing.db.FavouritesDbHelper;
+import com.arcuscomputing.QuickResultListAdapter;
+import com.arcuscomputing.FavouritesDbHelper;
 import com.arcuscomputing.dictionary.io.ArcusDictionary;
 import com.arcuscomputing.dictionary.menu.IArcusMenu;
 import com.arcuscomputing.dictionary.menu.impl.ArcusMenu;
-import com.arcuscomputing.dictionarypro.parent.R;
-import com.arcuscomputing.models.WordModel;
-import com.arcuscomputing.test.ArcusDictionaryMockObjects;
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
+import com.arcuscomputing.dictionarypro.ads.R;
+import com.arcuscomputing.WordModel;
+import com.arcuscomputing.ArcusDictionaryMockObjects;
 
 import java.lang.ref.WeakReference;
 import java.net.URLEncoder;
@@ -57,10 +55,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-import static com.arcuscomputing.db.FavouritesDbHelper.OPTION_SORT_ALPHA_ASC;
-import static com.arcuscomputing.db.FavouritesDbHelper.OPTION_SORT_ALPHA_DESC;
-import static com.arcuscomputing.db.FavouritesDbHelper.OPTION_SORT_DATE_ASC;
-import static com.arcuscomputing.db.FavouritesDbHelper.OPTION_SORT_DATE_DESC;
+import static com.arcuscomputing.FavouritesDbHelper.OPTION_SORT_ALPHA_ASC;
+import static com.arcuscomputing.FavouritesDbHelper.OPTION_SORT_ALPHA_DESC;
+import static com.arcuscomputing.FavouritesDbHelper.OPTION_SORT_DATE_ASC;
+import static com.arcuscomputing.FavouritesDbHelper.OPTION_SORT_DATE_DESC;
 import static com.arcuscomputing.dictionary.menu.IArcusMenu.CONTEXT_GOOGLE_DICTIONARY;
 import static com.arcuscomputing.dictionary.menu.IArcusMenu.MENU_ALPHA_SORT_INDEX;
 import static com.arcuscomputing.dictionary.menu.IArcusMenu.MENU_DATE_SORT_INDEX;
@@ -130,24 +128,11 @@ public class ArcusSearchActivity extends AppCompatActivity implements
 
         setContentView(R.layout.main_ads);
 
-        AdView adview = (AdView) findViewById(R.id.adView);
-
-        if (adview == null) {
-            throw new IllegalStateException("plumbus");
-        }
-
-        String packageName = getPackageName();
-        if (packageName.equals("com.arcuscomputing.dictionarypro")) {
-            adview.setVisibility(View.GONE);
-        } else {
-            AdRequest adRequest = new AdRequest.Builder().build();
-            adview.loadAd(adRequest);
-        }
 
         dbHelper = new FavouritesDbHelper(this);
 
-        this.et = (EditText) findViewById(R.id.etSearch);
-        this.lvQuickResults = (ListView) findViewById(R.id.lvQuickResults);
+        this.et = findViewById(R.id.etSearch);
+        this.lvQuickResults = findViewById(R.id.lvQuickResults);
         imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
         dictionary = ArcusApplication.getDictionary();
         preferences = new ArcusPreferences(getApplicationContext());
@@ -325,7 +310,7 @@ public class ArcusSearchActivity extends AppCompatActivity implements
             this.et.setInputType(InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD);
         }
 
-        ImageView speakButton = (ImageView) findViewById(R.id.btnSpeak);
+        ImageView speakButton = findViewById(R.id.btnSpeak);
 
         if (preferences.isInternetDisabled()) {
             if (speakButton != null) {
@@ -419,8 +404,7 @@ public class ArcusSearchActivity extends AppCompatActivity implements
 
     @Override
     public void run() {
-        dictionary.ensureLoaded(getApplication()
-                .getApplicationInfo().publicSourceDir, true);
+        dictionary.ensureLoaded(getApplicationContext());
 
         handler.sendEmptyMessage(0);
     }
@@ -577,7 +561,7 @@ public class ArcusSearchActivity extends AppCompatActivity implements
 
         @SuppressLint("InflateParams") View view = LayoutInflater.from(this).inflate(R.layout.help_dialog, null);
 
-        WebView helpWeb = (WebView) view.findViewById(R.id.help_webview);
+        WebView helpWeb = view.findViewById(R.id.help_webview);
         helpWeb.loadUrl("file:///android_asset/help.html");
 
         builder.setView(view);
@@ -629,12 +613,6 @@ public class ArcusSearchActivity extends AppCompatActivity implements
                             }
                         });
         builder.show();
-    }
-
-    public void handleBackup() {
-        Intent intent = new Intent(this, BackupActivity.class);
-
-        startActivityForResult(intent, 0);
     }
 
     public void handleDateSortAction() {
@@ -843,26 +821,13 @@ public class ArcusSearchActivity extends AppCompatActivity implements
         }
     }
 
-    @Override
-    public void onNewIntent(Intent intent) {
-
-        if (intent.getAction().equals(ArcusWotdWidget.WIDGET_LAUNCH)) {
-            if (intent.getExtras() != null
-                    && intent.getExtras().getString(
-                    DictionaryConstants.INITIAL_WORD) != null) {
-                setQuery(intent.getExtras().getString(
-                        DictionaryConstants.INITIAL_WORD));
-            }
-        }
-    }
-
     static class SearchHandler extends Handler {
 
         private String query;
 
         private WeakReference<ArcusSearchActivity> mActivity;
 
-        public SearchHandler(ArcusSearchActivity mActivity) {
+        SearchHandler(ArcusSearchActivity mActivity) {
             this.mActivity = new WeakReference<>(mActivity);
         }
 
@@ -875,12 +840,12 @@ public class ArcusSearchActivity extends AppCompatActivity implements
             }
         }
 
-        public void sleep(long delayMillis) {
+        void sleep(long delayMillis) {
             this.removeMessages(0);
             sendMessageDelayed(obtainMessage(0), delayMillis);
         }
 
-        public void setQuery(String query) {
+        void setQuery(String query) {
             this.query = query;
         }
     }

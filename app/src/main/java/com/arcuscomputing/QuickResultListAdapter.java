@@ -1,4 +1,4 @@
-package com.arcuscomputing.adapters;
+package com.arcuscomputing;
 
 import android.content.Context;
 import android.content.Intent;
@@ -18,9 +18,9 @@ import android.widget.TextView;
 import android.widget.TextView.BufferType;
 
 import com.arcuscomputing.dictionary.ArcusSearchActivity;
+import com.arcuscomputing.dictionarypro.ads.R;
 
-import com.arcuscomputing.dictionarypro.parent.R;
-import com.arcuscomputing.models.WordModel;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -47,14 +47,11 @@ public class QuickResultListAdapter implements ListAdapter {
     }
 
     private static String capitalize(String str) {
-        int strLen;
-        if (str == null || (strLen = str.length()) == 0) {
+        if (str == null || str.length() == 0) {
             return str;
         }
-        return new StringBuilder(strLen)
-                .append(Character.toTitleCase(str.charAt(0)))
-                .append(str.substring(1))
-                .toString();
+        return String.valueOf(Character.toTitleCase(str.charAt(0))) +
+                str.substring(1);
     }
 
     public List<WordModel> getResults() {
@@ -99,11 +96,11 @@ public class QuickResultListAdapter implements ListAdapter {
 
         final WordModel word = results.get(position);
 
-        /** Word */
-        TextView tv = (TextView) view.findViewById(R.id.definition_tv_headline);
+        /* Word */
+        TextView tv = view.findViewById(R.id.definition_tv_headline);
         tv.setText(capitalize(word.getWord()));
 
-        /** Definition */
+        /* Definition */
         String def = word.getDefinition();
 
         if (activity.inFavouritesMode()) {
@@ -122,20 +119,20 @@ public class QuickResultListAdapter implements ListAdapter {
             }
         }
 
-        tv = (TextView) view.findViewById(R.id.definition_tv_definition);
+        tv = view.findViewById(R.id.definition_tv_definition);
         tv.setMovementMethod(LinkMovementMethod.getInstance());
         tv.setText(capitalize(def), BufferType.SPANNABLE);
 
-        /** Type */
-        tv = (TextView) view.findViewById(R.id.definition_tv_type);
+        /* Type */
+        tv = view.findViewById(R.id.definition_tv_type);
         tv.setText(capitalize(word.getType()));
 
         if (word.getTagCount() == -1) {
             tv.setText("Web");
         }
 
-        /** Synonyms */
-        tv = (TextView) view.findViewById(R.id.definition_tv_synonyms);
+        /* Synonyms */
+        tv = view.findViewById(R.id.definition_tv_synonyms);
         tv.setMovementMethod(LinkMovementMethod.getInstance());
 
         if (word.getSynonyms().length() > 0) {
@@ -145,7 +142,7 @@ public class QuickResultListAdapter implements ListAdapter {
             tv.setVisibility(TextView.GONE);
         }
 
-        ImageView iv = (ImageView) view.findViewById(R.id.FavIcon);
+        ImageView iv = view.findViewById(R.id.FavIcon);
 
         if (word.getTagCount() == -1) {
             iv.setVisibility(View.GONE);
@@ -183,7 +180,7 @@ public class QuickResultListAdapter implements ListAdapter {
             }
         });
 
-        ImageView ttsIv = (ImageView) view.findViewById(R.id.TtsIcon);
+        ImageView ttsIv = view.findViewById(R.id.TtsIcon);
 
         if (word.getTagCount() == -1) {
             ttsIv.setVisibility(View.GONE);
@@ -197,7 +194,7 @@ public class QuickResultListAdapter implements ListAdapter {
             }
         });
 
-        ImageView shareIv = (ImageView) view.findViewById(R.id.ShareIcon);
+        ImageView shareIv = view.findViewById(R.id.ShareIcon);
 
         if (word.getTagCount() == -1) {
             shareIv.setVisibility(View.GONE);
@@ -219,7 +216,7 @@ public class QuickResultListAdapter implements ListAdapter {
             }
         });
 
-        ImageView linkIv = (ImageView) view.findViewById(R.id.LinkIcon);
+        ImageView linkIv = view.findViewById(R.id.LinkIcon);
 
         if (word.getTagCount() == -1) {
             linkIv.setVisibility(View.GONE);
@@ -229,12 +226,12 @@ public class QuickResultListAdapter implements ListAdapter {
 
             @Override
             public void onClick(View v) {
-                TextView def = (TextView) view.findViewById(R.id.definition_tv_definition);
+                TextView def = view.findViewById(R.id.definition_tv_definition);
 
                 linkifyDefinition(def, def.getText().toString());
 
                 if (word.getSynonyms().length() > 0) {
-                    TextView syn = (TextView) view.findViewById(R.id.definition_tv_synonyms);
+                    TextView syn = view.findViewById(R.id.definition_tv_synonyms);
                     linkifySynonyms(syn, syn.getText().toString());
                 }
 
@@ -245,7 +242,7 @@ public class QuickResultListAdapter implements ListAdapter {
     }
 
     private String getDefinition(final WordModel word) {
-        String d = "";
+        String d;
 
         if (word.getType().equalsIgnoreCase(NOUN_LABEL)) {
             d = NOUN_LABEL_ABV + " " + word.getDefinition();
@@ -286,13 +283,13 @@ public class QuickResultListAdapter implements ListAdapter {
 
             ClickableSpan clickableSpan = new ClickableSpan() {
                 @Override
-                public void onClick(View widget) {
+                public void onClick(@NotNull View widget) {
                     // can replace with iface
                     activity.setQuery(currentWord);
                 }
 
                 @Override
-                public void updateDrawState(TextPaint ds) {
+                public void updateDrawState(@NotNull TextPaint ds) {
                     super.updateDrawState(ds);
                 }
             };
@@ -330,12 +327,12 @@ public class QuickResultListAdapter implements ListAdapter {
             ClickableSpan clickableSpan = new ClickableSpan() {
 
                 @Override
-                public void onClick(View widget) {
+                public void onClick(@NotNull View widget) {
                     activity.setQuery(currentWord);
                 }
 
                 @Override
-                public void updateDrawState(TextPaint ds) {
+                public void updateDrawState(@NotNull TextPaint ds) {
                     super.updateDrawState(ds);
                 }
 
@@ -375,7 +372,6 @@ public class QuickResultListAdapter implements ListAdapter {
     }
 
     private View createView(ViewGroup parent) {
-        View view = mInflater.inflate(R.layout.definition_table, parent, false);
-        return view;
+        return mInflater.inflate(R.layout.definition_table, parent, false);
     }
 }
