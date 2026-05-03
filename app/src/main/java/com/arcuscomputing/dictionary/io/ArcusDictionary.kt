@@ -1,7 +1,6 @@
 package com.arcuscomputing.dictionary.io
 
 import android.content.Context
-import android.text.TextUtils
 import com.arcuscomputing.WordModel
 import com.arcuscomputing.dictionary.DictionaryConstants.ADJECTIVE
 import com.arcuscomputing.dictionary.DictionaryConstants.ADJECTIVE_LABEL
@@ -19,8 +18,9 @@ import com.arcuscomputing.dictionary.DictionaryConstants.VERB_LABEL
 import com.arcuscomputing.dictionary.DictionaryConstants.WORD_INDEX
 import timber.log.Timber
 import java.io.IOException
-import java.util.Random
 import java.util.regex.Pattern
+import kotlin.math.absoluteValue
+import kotlin.random.Random
 
 class ArcusDictionary(private val dataFileManager: DataFileManager) {
 
@@ -66,18 +66,19 @@ class ArcusDictionary(private val dataFileManager: DataFileManager) {
     fun getRandom(maxJump: Int, maxListSize: Int): List<WordModel> {
         if (!checkFiles()) return emptyList()
 
+        val index = checkNotNull(indexRaf)
+        val defs = checkNotNull(definitionsRaf)
         val list = mutableListOf<WordModel>()
         try {
-            val length = indexRaf!!.length()
-            val random = Random(System.currentTimeMillis())
+            val length = index.length()
             var i = 0
             while (i < maxJump && list.size < maxListSize) {
-                val randomStart = Math.abs(random.nextLong() % length)
-                indexRaf!!.seek(randomStart)
-                if (indexRaf!!.readLine() != null) {
-                    val line = indexRaf!!.readLine() ?: continue
+                val randomStart = (Random.nextLong() % length).absoluteValue
+                index.seek(randomStart)
+                if (index.readLine() != null) {
+                    val line = index.readLine() ?: continue
                     if (pattern.matcher(line).matches()) {
-                        addResultToList(line, list, definitionsRaf!!)
+                        addResultToList(line, list, defs)
                     }
                 }
                 i++
@@ -97,7 +98,8 @@ class ArcusDictionary(private val dataFileManager: DataFileManager) {
         val q = query.lowercase().trim()
 
         try {
-            val index = indexRaf!!
+            val index = checkNotNull(indexRaf)
+        val defs = checkNotNull(definitionsRaf)
             var low = 0L
             var high = index.length()
 
@@ -130,7 +132,7 @@ class ArcusDictionary(private val dataFileManager: DataFileManager) {
             while (true) {
                 val line = index.getNextLine() ?: break
                 if (!line.startsWith(q) || list.size > QUICK_MAX_READAHEAD) break
-                addResultToList(line, list, definitionsRaf!!)
+                addResultToList(line, list, defs)
             }
         } catch (e: IOException) {
             Timber.e(e, "Unexpected error in getMatches")
@@ -151,7 +153,7 @@ class ArcusDictionary(private val dataFileManager: DataFileManager) {
     }
 
     private fun addResultToList(line: String, list: MutableList<WordModel>, defsRandom: ReadRandom) {
-        val splitLine = TextUtils.split(line, FIELD_SEPARATOR)
+        val splitLine = line.split(FIELD_SEPARATOR)
         if (splitLine.size != 2) {
             Timber.e("Unexpected number of tokens after splitting line")
             return
@@ -216,7 +218,7 @@ class ArcusDictionary(private val dataFileManager: DataFileManager) {
         val trimmed = if (list.size > QUICK_MAX_TO_RETURN) list.subList(0, QUICK_MAX_TO_RETURN).toMutableList() else list
 
         if (exactIndex == -1) {
-            trimmed.add(0, WordModel(query, "No exact results for $query. Long press here for web searches.", -1))
+            trimmed.add(0, WordModel(word = query, definition = "No exact results for $query. Long press here for web searches.", tagCount = -1))
         }
 
         return trimmed

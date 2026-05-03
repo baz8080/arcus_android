@@ -106,7 +106,7 @@ class QuickResultListAdapter(
                     if (activity.inFavouritesMode()) activity.refreshFavourites()
                 } else {
                     favIcon.setImageResource(R.drawable.ic_star)
-                    activity.dbHelper.insertfavourite(word.word, def2)
+                    activity.dbHelper.insertFavourite(word.word, def2)
                 }
             }
             ttsIcon.setOnClickListener { activity.speak(word.word) }

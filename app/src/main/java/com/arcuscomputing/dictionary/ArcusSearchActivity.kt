@@ -2,7 +2,6 @@ package com.arcuscomputing.dictionary
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
-import android.app.ProgressDialog
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
@@ -41,7 +40,6 @@ import java.lang.ref.WeakReference
 import java.util.Locale
 
 @SuppressLint("HandlerLeak")
-@Suppress("DEPRECATION")
 class ArcusSearchActivity : AppCompatActivity(), TextWatcher, Runnable,
     TextToSpeech.OnInitListener {
 
@@ -50,8 +48,7 @@ class ArcusSearchActivity : AppCompatActivity(), TextWatcher, Runnable,
     private lateinit var lvQuickResults: ListView
     private lateinit var sh: SearchHandler
 
-    private lateinit var progress: ProgressDialog
-    private var alertDialog: AlertDialog.Builder? = null
+    private var progress: AlertDialog? = null
 
     lateinit var dbHelper: FavouritesDbHelper
         private set
@@ -68,11 +65,7 @@ class ArcusSearchActivity : AppCompatActivity(), TextWatcher, Runnable,
 
     private val handler = object : Handler(Looper.getMainLooper()) {
         override fun handleMessage(msg: Message) {
-            try {
-                progress.dismiss()
-            } catch (e: Exception) {
-                makeToast("App was closed before progress dialogue completed")
-            }
+            progress?.dismiss()
         }
     }
 
@@ -141,7 +134,11 @@ class ArcusSearchActivity : AppCompatActivity(), TextWatcher, Runnable,
                 }
                 .show()
         }
-        progress = ProgressDialog.show(this, getString(R.string.init_caption), getString(R.string.init_text), true, false)
+        progress = AlertDialog.Builder(this)
+            .setTitle(getString(R.string.init_caption))
+            .setMessage(getString(R.string.init_text))
+            .setCancelable(false)
+            .show()
         Thread(this).start()
     }
 
