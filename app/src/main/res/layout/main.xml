@@ -49,16 +49,6 @@
 
             </com.google.android.material.textfield.TextInputLayout>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnSpeak"
-                style="@style/Widget.Material3.Button.IconButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="4dp"
-                android:contentDescription="@string/press_to_activate_voice_input"
-                app:icon="@drawable/ic_mic_white_24dp"
-                app:iconTint="?attr/colorOnSurfaceVariant" />
-
         </LinearLayout>
 
         <ListView

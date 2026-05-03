@@ -1,7 +1,6 @@
 package com.arcuscomputing.dictionary.io
 
 import android.content.Context
-import androidx.annotation.RawRes
 import com.arcuscomputing.dictionarypro.ads.R
 import okio.buffer
 import okio.sink

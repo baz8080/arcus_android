@@ -6,7 +6,8 @@ import android.view.Menu
 import android.view.MenuItem
 import com.arcuscomputing.dictionary.ArcusSearchActivity
 import com.arcuscomputing.dictionary.menu.IArcusMenu
-import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.CONTEXT_GOOGLE_DICTIONARY
+import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENUGROUP_ACTIONS
+import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENUGROUP_INFO
 import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENU_ALPHA_SORT
 import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENU_ALPHA_SORT_INDEX
 import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENU_CLEAR_FAVOURITES
@@ -17,16 +18,12 @@ import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENU_EMAIL_FAVOUR
 import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENU_EMAIL_FAVOURITES_INDEX
 import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENU_FAVOURITES
 import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENU_FAVOURITES_INDEX
-import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENU_HELP
-import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENU_HELP_INDEX
 import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENU_RANDOM
 import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENU_RANDOM_INDEX
 import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENU_SEARCH
 import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENU_SEARCH_INDEX
 import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENU_SETTINGS
 import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENU_SETTINGS_INDEX
-import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENUGROUP_ACTIONS
-import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENUGROUP_INFO
 import com.arcuscomputing.dictionarypro.ads.R
 
 class ArcusMenu(private val context: Context) : IArcusMenu {
@@ -48,9 +45,6 @@ class ArcusMenu(private val context: Context) : IArcusMenu {
         menu.add(MENUGROUP_ACTIONS, MENU_SETTINGS, MENU_SETTINGS_INDEX, getString(R.string.menu_settings))
             .setIcon(R.drawable.ic_settings_white_24dp)
 
-        menu.add(MENUGROUP_INFO, MENU_HELP, MENU_HELP_INDEX, getString(R.string.menu_help))
-            .setIcon(R.drawable.ic_help_white_24dp)
-
         menu.add(MENUGROUP_INFO, MENU_RANDOM, MENU_RANDOM_INDEX, getString(R.string.menu_random))
             .setIcon(R.drawable.ic_shuffle_white_24dp)
             .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM)
@@ -71,7 +65,7 @@ class ArcusMenu(private val context: Context) : IArcusMenu {
     }
 
     override fun setMainMenuItemsVisible(visible: Boolean) {
-        listOf(MENU_SEARCH_INDEX, MENU_FAVOURITES_INDEX, MENU_SETTINGS_INDEX, MENU_HELP_INDEX, MENU_RANDOM_INDEX)
+        listOf(MENU_SEARCH_INDEX, MENU_FAVOURITES_INDEX, MENU_SETTINGS_INDEX, MENU_RANDOM_INDEX)
             .forEach { index ->
                 menu.getItem(index).isEnabled = visible
                 menu.getItem(index).isVisible = visible
@@ -90,7 +84,6 @@ class ArcusMenu(private val context: Context) : IArcusMenu {
         return when (item.itemId) {
             MENU_SEARCH -> { activity.handleSearchAction(); true }
             MENU_FAVOURITES -> { activity.handleFavouritesAction(); true }
-            MENU_HELP -> { activity.handleHelpAction(); true }
             MENU_SETTINGS -> { activity.handleSettingsAction(); true }
             MENU_ALPHA_SORT -> { activity.handleAlphaSortAction(); true }
             MENU_DATE_SORT -> { activity.handleDateSortAction(); true }

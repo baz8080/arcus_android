@@ -39,5 +39,5 @@ object DictionaryConstants {
 
     const val CLEAN_PATTERN = "\\(|\\)|;|\\.|'|`|,|\""
     const val INITIAL_WORD = "initialWord"
-    const val VOICE_REQUEST_CODE = 8080
+
 }
