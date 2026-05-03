@@ -68,6 +68,7 @@ class QuickResultListAdapter(
         view.findViewById<TextView>(R.id.definition_tv_definition).apply {
             movementMethod = LinkMovementMethod.getInstance()
             setText(capitalize(def), TextView.BufferType.SPANNABLE)
+            linkifyDefinition(this, def)
         }
 
         view.findViewById<TextView>(R.id.definition_tv_type).text =
@@ -78,6 +79,7 @@ class QuickResultListAdapter(
             synonymsView.movementMethod = LinkMovementMethod.getInstance()
             synonymsView.setText("Synonyms: ${word.synonyms}", TextView.BufferType.SPANNABLE)
             synonymsView.visibility = View.VISIBLE
+            linkifySynonyms(synonymsView, synonymsView.text.toString())
         } else {
             synonymsView.visibility = View.GONE
         }
@@ -85,27 +87,25 @@ class QuickResultListAdapter(
         val favIcon = view.findViewById<ImageView>(R.id.FavIcon)
         val ttsIcon = view.findViewById<ImageView>(R.id.TtsIcon)
         val shareIcon = view.findViewById<ImageView>(R.id.ShareIcon)
-        val linkIcon = view.findViewById<ImageView>(R.id.LinkIcon)
 
         if (word.tagCount == -1) {
             favIcon.visibility = View.GONE
             ttsIcon.visibility = View.GONE
             shareIcon.visibility = View.GONE
-            linkIcon.visibility = View.GONE
         } else {
             val d = getDefinition(word)
             favIcon.setImageResource(
-                if (isFavourited(word.word, d)) R.drawable.ic_star_white_24dp
-                else R.drawable.ic_star_border_white_24dp
+                if (isFavourited(word.word, d)) R.drawable.ic_star
+                else R.drawable.ic_star_border
             )
             favIcon.setOnClickListener {
                 val def2 = getDefinition(word)
                 if (isFavourited(word.word, def2)) {
                     activity.dbHelper.deleteFromFavourites(word.word, def2)
-                    favIcon.setImageResource(R.drawable.ic_star_border_white_24dp)
+                    favIcon.setImageResource(R.drawable.ic_star_border)
                     if (activity.inFavouritesMode()) activity.refreshFavourites()
                 } else {
-                    favIcon.setImageResource(R.drawable.ic_star_white_24dp)
+                    favIcon.setImageResource(R.drawable.ic_star)
                     activity.dbHelper.insertfavourite(word.word, def2)
                 }
             }
@@ -121,15 +121,9 @@ class QuickResultListAdapter(
                     )
                 )
             }
-            linkIcon.setOnClickListener {
-                linkifyDefinition(
-                    view.findViewById(R.id.definition_tv_definition),
-                    view.findViewById<TextView>(R.id.definition_tv_definition).text.toString()
-                )
-                if (word.synonyms.isNotEmpty()) {
-                    linkifySynonyms(synonymsView, synonymsView.text.toString())
-                }
-            }
+
+            //linkifyDefinition()
+            //linkifySynonyms()
         }
 
         return view

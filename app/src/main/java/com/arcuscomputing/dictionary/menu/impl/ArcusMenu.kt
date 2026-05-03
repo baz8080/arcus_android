@@ -34,19 +34,19 @@ class ArcusMenu(private val context: Context) : IArcusMenu {
 
     override fun onCreateOptionsMenu(): Boolean {
         menu.add(MENUGROUP_ACTIONS, MENU_SEARCH, MENU_SEARCH_INDEX, getString(R.string.menu_search))
-            .setIcon(R.drawable.ic_search_white_24dp)
+            .setIcon(R.drawable.ic_search)
             .setAlphabeticShortcut(SearchManager.MENU_KEY)
             .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM)
 
         menu.add(MENUGROUP_ACTIONS, MENU_FAVOURITES, MENU_FAVOURITES_INDEX, getString(R.string.menu_favourites))
-            .setIcon(R.drawable.ic_star_white_24dp)
+            .setIcon(R.drawable.ic_star)
             .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM)
 
         menu.add(MENUGROUP_ACTIONS, MENU_SETTINGS, MENU_SETTINGS_INDEX, getString(R.string.menu_settings))
-            .setIcon(R.drawable.ic_settings_white_24dp)
+            .setIcon(R.drawable.ic_settings)
 
         menu.add(MENUGROUP_INFO, MENU_RANDOM, MENU_RANDOM_INDEX, getString(R.string.menu_random))
-            .setIcon(R.drawable.ic_shuffle_white_24dp)
+            .setIcon(R.drawable.ic_shuffle)
             .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM)
 
         menu.add(MENUGROUP_INFO, MENU_ALPHA_SORT, MENU_ALPHA_SORT_INDEX, getString(R.string.menu_sort_alpha_asc))
