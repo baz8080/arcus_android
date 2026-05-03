@@ -19,8 +19,6 @@ import com.arcuscomputing.dictionary.DictionaryConstants.WORD_INDEX
 import timber.log.Timber
 import java.io.IOException
 import java.util.regex.Pattern
-import kotlin.math.absoluteValue
-import kotlin.random.Random
 
 class ArcusDictionary(private val dataFileManager: DataFileManager) {
 
@@ -57,37 +55,6 @@ class ArcusDictionary(private val dataFileManager: DataFileManager) {
         }
 
         loaded = dataFilesExist
-    }
-
-    @Synchronized
-    fun getRandom(): List<WordModel> = getRandom(20, 10)
-
-    @Synchronized
-    fun getRandom(maxJump: Int, maxListSize: Int): List<WordModel> {
-        if (!checkFiles()) return emptyList()
-
-        val index = checkNotNull(indexRaf)
-        val defs = checkNotNull(definitionsRaf)
-        val list = mutableListOf<WordModel>()
-        try {
-            val length = index.length()
-            var i = 0
-            while (i < maxJump && list.size < maxListSize) {
-                val randomStart = (Random.nextLong() % length).absoluteValue
-                index.seek(randomStart)
-                if (index.readLine() != null) {
-                    val line = index.readLine() ?: continue
-                    if (pattern.matcher(line).matches()) {
-                        addResultToList(line, list, defs)
-                    }
-                }
-                i++
-            }
-        } catch (e: IOException) {
-            Timber.e(e, "Unexpected error in getRandom")
-            return emptyList()
-        }
-        return list
     }
 
     @Synchronized

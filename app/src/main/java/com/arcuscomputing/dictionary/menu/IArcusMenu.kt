@@ -18,21 +18,18 @@ interface IArcusMenu {
         const val MENU_SETTINGS = 1
 
         const val MENU_FAVOURITES = 2
-        const val MENU_RANDOM = 3
-        const val MENU_ALPHA_SORT = 4
-        const val MENU_DATE_SORT = 5
-        const val MENU_CLEAR_FAVOURITES = 6
-        const val MENU_EMAIL_FAVOURITES = 7
+        const val MENU_ALPHA_SORT = 3
+        const val MENU_DATE_SORT = 4
+        const val MENU_CLEAR_FAVOURITES = 5
+        const val MENU_EMAIL_FAVOURITES = 6
 
         const val MENU_SEARCH_INDEX = 0
         const val MENU_FAVOURITES_INDEX = 1
         const val MENU_SETTINGS_INDEX = 2
-
-        const val MENU_RANDOM_INDEX = 3
-        const val MENU_ALPHA_SORT_INDEX = 4
-        const val MENU_DATE_SORT_INDEX = 5
-        const val MENU_CLEAR_FAVOURITES_INDEX = 6
-        const val MENU_EMAIL_FAVOURITES_INDEX = 7
+        const val MENU_ALPHA_SORT_INDEX = 3
+        const val MENU_DATE_SORT_INDEX = 4
+        const val MENU_CLEAR_FAVOURITES_INDEX = 5
+        const val MENU_EMAIL_FAVOURITES_INDEX = 6
 
         const val MENUGROUP_INFO = 0
         const val MENUGROUP_ACTIONS = 1

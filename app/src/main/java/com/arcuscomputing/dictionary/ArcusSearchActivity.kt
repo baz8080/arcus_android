@@ -189,13 +189,6 @@ class ArcusSearchActivity : AppCompatActivity(), TextWatcher, Runnable,
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         arcusMenu.onOptionsItemSelected(item, this) || super.onOptionsItemSelected(item)
 
-    fun handleRandom() {
-        val currentText = et.text.toString().trim()
-        previousWord = if (currentText.isNotEmpty() && currentText != getString(R.string.random_mode)) currentText else ""
-        et.setText(getString(R.string.random_mode))
-        hasShownExitWarning = false
-    }
-
     fun handleEmailFavouritesAction() {
         val adapter = lvQuickResults.adapter as? QuickResultListAdapter ?: return
         val results = adapter.getResults()
@@ -282,8 +275,6 @@ class ArcusSearchActivity : AppCompatActivity(), TextWatcher, Runnable,
         when (q) {
             getString(R.string.favourites_mode) ->
                 lvQuickResults.adapter = QuickResultListAdapter(dbHelper.getAllFavourites(sortMethod), this)
-            getString(R.string.random_mode) ->
-                lvQuickResults.adapter = QuickResultListAdapter(dictionary.getRandom(), this)
             else -> {
                 val adapter = QuickResultListAdapter(dictionary.getMatches(q, preferences.isPureAlpha), this)
                 lvQuickResults.adapter = adapter
@@ -297,7 +288,7 @@ class ArcusSearchActivity : AppCompatActivity(), TextWatcher, Runnable,
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            if (previousWord != null || inFavouritesMode() || inRandomMode()) {
+            if (previousWord != null || inFavouritesMode()) {
                 et.setText(previousWord)
                 previousWord = null
             } else {
@@ -314,7 +305,6 @@ class ArcusSearchActivity : AppCompatActivity(), TextWatcher, Runnable,
     }
 
     fun inFavouritesMode() = et.text.toString().trim() == getString(R.string.favourites_mode)
-    fun inRandomMode() = et.text.toString().trim() == getString(R.string.random_mode)
 
     fun refreshFavourites() {
         et.setText(getString(R.string.favourites_mode))

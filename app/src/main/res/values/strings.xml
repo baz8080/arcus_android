@@ -24,8 +24,6 @@
     <string name="menu_search">Search</string>
     <string name="menu_settings">Settings</string>
     <string name="menu_favourites">Favourites</string>
-    <string name="menu_random">Random Words</string>
-
     <string name="menu_sort_alpha_asc">Sort by Word (Asc.)</string>
     <string name="menu_sort_alpha_desc">Sort by Word (Desc.)</string>
 
@@ -50,8 +48,6 @@
 
     <!-- SPECIAL MODES -->
     <string name="favourites_mode">special:favourites</string>
-    <string name="random_mode">special:random</string>
-
     <!-- Toast, i love toast -->
     <string name="favourites_toast_added"> added to favourites</string>
     <string name="favourites_toast_removed"> removed from favourites</string>

@@ -18,8 +18,6 @@ import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENU_EMAIL_FAVOUR
 import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENU_EMAIL_FAVOURITES_INDEX
 import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENU_FAVOURITES
 import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENU_FAVOURITES_INDEX
-import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENU_RANDOM
-import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENU_RANDOM_INDEX
 import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENU_SEARCH
 import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENU_SEARCH_INDEX
 import com.arcuscomputing.dictionary.menu.IArcusMenu.Companion.MENU_SETTINGS
@@ -45,10 +43,6 @@ class ArcusMenu(private val context: Context) : IArcusMenu {
         menu.add(MENUGROUP_ACTIONS, MENU_SETTINGS, MENU_SETTINGS_INDEX, getString(R.string.menu_settings))
             .setIcon(R.drawable.ic_settings)
 
-        menu.add(MENUGROUP_INFO, MENU_RANDOM, MENU_RANDOM_INDEX, getString(R.string.menu_random))
-            .setIcon(R.drawable.ic_shuffle)
-            .setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM)
-
         menu.add(MENUGROUP_INFO, MENU_ALPHA_SORT, MENU_ALPHA_SORT_INDEX, getString(R.string.menu_sort_alpha_asc))
             .setIcon(android.R.drawable.ic_menu_sort_alphabetically)
 
@@ -65,7 +59,7 @@ class ArcusMenu(private val context: Context) : IArcusMenu {
     }
 
     override fun setMainMenuItemsVisible(visible: Boolean) {
-        listOf(MENU_SEARCH_INDEX, MENU_FAVOURITES_INDEX, MENU_SETTINGS_INDEX, MENU_RANDOM_INDEX)
+        listOf(MENU_SEARCH_INDEX, MENU_FAVOURITES_INDEX, MENU_SETTINGS_INDEX)
             .forEach { index ->
                 menu.getItem(index).isEnabled = visible
                 menu.getItem(index).isVisible = visible
@@ -89,7 +83,7 @@ class ArcusMenu(private val context: Context) : IArcusMenu {
             MENU_DATE_SORT -> { activity.handleDateSortAction(); true }
             MENU_CLEAR_FAVOURITES -> { activity.handleClearFavouritesAction(); true }
             MENU_EMAIL_FAVOURITES -> { activity.handleEmailFavouritesAction(); true }
-            MENU_RANDOM -> { activity.handleRandom(); true }
+
             else -> false
         }
     }
