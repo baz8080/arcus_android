@@ -30,7 +30,7 @@ class FavouritesDbHelper(context: Context) : SQLiteOpenHelper(
     }
 
     @Synchronized
-    fun insertfavourite(word: String, definition: String) {
+    fun insertFavourite(word: String, definition: String) {
         insertStatement.bindString(1, word)
         insertStatement.bindString(2, definition)
         insertStatement.execute()
@@ -55,10 +55,10 @@ class FavouritesDbHelper(context: Context) : SQLiteOpenHelper(
         val cursor = db.rawQuery("$ALL_FAVOURITES_QUERY$sortMethod", null)
         val results = mutableListOf<WordModel>()
         while (cursor.moveToNext()) {
-            val wm = WordModel()
-            wm.word = cursor.getString(cursor.getColumnIndexOrThrow("word"))
-            wm.definition = cursor.getString(cursor.getColumnIndexOrThrow("definition"))
-            results.add(wm)
+            results.add(WordModel(
+                word = cursor.getString(cursor.getColumnIndexOrThrow("word")),
+                definition = cursor.getString(cursor.getColumnIndexOrThrow("definition"))
+            ))
         }
         cursor.close()
         return results

@@ -12,7 +12,6 @@
             android:name="com.arcuscomputing.dictionary.ArcusSearchActivity"
             android:configChanges="orientation|keyboardHidden"
             android:exported="true"
-            android:label="@string/app_name"
             android:launchMode="singleTask"
             android:windowSoftInputMode="stateVisible|adjustPan" >
 
@@ -24,16 +23,8 @@
             </intent-filter>
         </activity>
 
-        <activity
-            android:name="com.arcuscomputing.dictionary.EditPreferencesActivity"
-            android:label="@string/app_name" >
-        </activity>
-        
-        <activity
-            android:name="com.arcuscomputing.dictionary.ArcusFavouritesActivity"
-            android:label="@string/app_name" >
-        </activity>
-
+        <activity android:name="com.arcuscomputing.dictionary.EditPreferencesActivity" />
+        <activity android:name="com.arcuscomputing.dictionary.ArcusFavouritesActivity" />
     </application>
 
 </manifest>
