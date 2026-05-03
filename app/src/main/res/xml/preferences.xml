@@ -11,7 +11,4 @@
         android:key="lang"
         android:summary="@string/pref.lang_summary"
         android:title="@string/pref.lang_title"/>
-
-
-
 </PreferenceScreen>
