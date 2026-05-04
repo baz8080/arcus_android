@@ -14,4 +14,5 @@
     <color name="md_surface_variant">#3F4850</color>
     <color name="md_on_surface_variant">#BFC8CF</color>
     <color name="md_outline">#899299</color>
+    <color name="md_outline_variant">#3F4850</color>
 </resources>
