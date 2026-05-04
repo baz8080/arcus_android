@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/menu_search"
+        android:alphabeticShortcut="s"
+        android:icon="@drawable/ic_search"
+        android:title="@string/menu_search"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/menu_favourites"
+        android:icon="@drawable/ic_star"
+        android:title="@string/menu_favourites"
+        app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/menu_settings"
+        android:icon="@drawable/ic_settings"
+        android:title="@string/menu_settings"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_alpha_sort"
+        android:icon="@android:drawable/ic_menu_sort_alphabetically"
+        android:title="@string/menu_sort_alpha_asc"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_date_sort"
+        android:icon="@android:drawable/ic_menu_month"
+        android:title="@string/menu_sort_date_asc"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_clear_favourites"
+        android:icon="@android:drawable/ic_menu_close_clear_cancel"
+        android:title="@string/menu_clear_favourites"
+        app:showAsAction="never" />
+
+    <item
+        android:id="@+id/menu_email_favourites"
+        android:icon="@android:drawable/ic_menu_send"
+        android:title="@string/menu_email_favourites"
+        app:showAsAction="never" />
+
+</menu>

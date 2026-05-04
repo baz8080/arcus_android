@@ -1,13 +1,19 @@
 package com.arcuscomputing.dictionary
 
 import android.os.Bundle
-import android.preference.PreferenceActivity
+import androidx.appcompat.app.AppCompatActivity
+import androidx.preference.PreferenceFragmentCompat
 import com.arcuscomputing.dictionarypro.ads.R
 
-@Suppress("DEPRECATION")
-class EditPreferencesActivity : PreferenceActivity() {
+class EditPreferencesActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        addPreferencesFromResource(R.xml.preferences)
+        setContentView(R.layout.activity_preferences)
+    }
+
+    class PrefsFragment : PreferenceFragmentCompat() {
+        override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
+            setPreferencesFromResource(R.xml.preferences, rootKey)
+        }
     }
 }

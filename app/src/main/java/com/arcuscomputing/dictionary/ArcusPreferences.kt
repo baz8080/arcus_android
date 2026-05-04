@@ -9,11 +9,9 @@ class ArcusPreferences(context: Context) {
 
     val isPureAlpha: Boolean get() = preferences.getBoolean(ALPHA_SORT_KEY, false)
     val useUSEnglish: Boolean get() = preferences.getBoolean(LANG_KEY, false)
-    val useAutoCorrect: Boolean get() = preferences.getBoolean(AUTOCORRECT_KEY, false)
 
     companion object {
         private const val ALPHA_SORT_KEY = "alphasort"
         private const val LANG_KEY = "lang"
-        private const val AUTOCORRECT_KEY = "autocorrect"
     }
 }

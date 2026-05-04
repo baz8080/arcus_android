@@ -24,7 +24,6 @@
         </activity>
 
         <activity android:name="com.arcuscomputing.dictionary.EditPreferencesActivity" />
-        <activity android:name="com.arcuscomputing.dictionary.ArcusFavouritesActivity" />
     </application>
 
 </manifest>

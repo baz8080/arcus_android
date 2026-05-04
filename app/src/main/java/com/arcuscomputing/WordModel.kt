@@ -5,7 +5,7 @@ data class WordModel(
     val definition: String = "",
     val tagCount: Int = 0,
     val synonyms: String = "",
-    var type: String = ""
+    val type: String = ""
 ) : Comparable<WordModel> {
 
     override fun compareTo(other: WordModel): Int = other.tagCount.compareTo(tagCount)
