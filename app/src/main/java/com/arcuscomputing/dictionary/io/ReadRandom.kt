@@ -1,16 +1,17 @@
 package com.arcuscomputing.dictionary.io
 
-import com.arcuscomputing.dictionary.DictionaryConstants.BUFFER_4096
 import java.io.File
 import java.io.IOException
 import java.io.RandomAccessFile
+
+private const val BUFFER_SIZE = 4096
 
 class ReadRandom(file: File, mode: String) : RandomAccessFile(file, mode) {
 
     private var bufEnd = 0
     private var bufPos = 0
     private var realPos = 0L
-    private val buffer = ByteArray(BUFFER_4096)
+    private val buffer = ByteArray(BUFFER_SIZE)
 
     init {
         invalidate()
@@ -24,7 +25,7 @@ class ReadRandom(file: File, mode: String) : RandomAccessFile(file, mode) {
     }
 
     private fun fillBuffer(): Int {
-        val n = super.read(buffer, 0, BUFFER_4096)
+        val n = super.read(buffer, 0, BUFFER_SIZE)
         if (n >= 0) {
             realPos += n
             bufEnd = n

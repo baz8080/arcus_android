@@ -12,6 +12,13 @@ class FavouritesDbHelper(context: Context) : SQLiteOpenHelper(
     DATABASE_VERSION
 ) {
 
+    enum class SortOrder(internal val sql: String) {
+        ALPHA_ASC("word ASC"),
+        ALPHA_DESC("word DESC"),
+        DATE_ASC("date_added ASC"),
+        DATE_DESC("date_added DESC"),
+    }
+
     private val db: SQLiteDatabase
     private val insertStatement: SQLiteStatement
 
@@ -38,10 +45,10 @@ class FavouritesDbHelper(context: Context) : SQLiteOpenHelper(
 
     @Synchronized
     fun isFavourite(word: String, definition: String): Boolean {
-        val cursor = db.rawQuery(FAVOURITE_QUERY, arrayOf(word, definition))
-        val count = cursor.count
+        val cursor = db.rawQuery(COUNT_QUERY, arrayOf(word, definition))
+        val count = if (cursor.moveToFirst()) cursor.getInt(0) else 0
         cursor.close()
-        return count == 1
+        return count > 0
     }
 
     @Synchronized
@@ -51,8 +58,8 @@ class FavouritesDbHelper(context: Context) : SQLiteOpenHelper(
     }
 
     @Synchronized
-    fun getAllFavourites(sortMethod: String): List<WordModel> {
-        val cursor = db.rawQuery("$ALL_FAVOURITES_QUERY$sortMethod", null)
+    fun getAllFavourites(sortOrder: SortOrder): List<WordModel> {
+        val cursor = db.rawQuery("SELECT * FROM favourites ORDER BY ${sortOrder.sql}", null)
         val results = mutableListOf<WordModel>()
         while (cursor.moveToNext()) {
             results.add(WordModel(
@@ -70,19 +77,12 @@ class FavouritesDbHelper(context: Context) : SQLiteOpenHelper(
     }
 
     companion object {
-        const val OPTION_SORT_ALPHA_ASC = "word  ASC"
-        const val OPTION_SORT_ALPHA_DESC = "word DESC"
-        const val OPTION_SORT_DATE_ASC = "date_added ASC"
-        const val OPTION_SORT_DATE_DESC = "date_added DESC"
-
         private const val DATABASE_VERSION = 3
         private const val DICTIONARY_TABLE_CREATE =
             "CREATE TABLE favourites (word TEXT, definition TEXT, date_added DATETIME default CURRENT_TIMESTAMP)"
         private const val INSERT_SQL =
             "INSERT INTO favourites (word, definition) values (?,?)"
-        private const val FAVOURITE_QUERY =
-            "SELECT * FROM favourites WHERE word = ? AND definition = ?"
-        private const val ALL_FAVOURITES_QUERY =
-            "SELECT * FROM favourites ORDER BY "
+        private const val COUNT_QUERY =
+            "SELECT COUNT(*) FROM favourites WHERE word = ? AND definition = ?"
     }
 }

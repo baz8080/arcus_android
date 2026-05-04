@@ -1,46 +1,37 @@
 package com.arcuscomputing.dictionary.io
 
-import android.content.Context
 import com.arcuscomputing.WordModel
-import com.arcuscomputing.dictionary.DictionaryConstants.ADJECTIVE
-import com.arcuscomputing.dictionary.DictionaryConstants.ADJECTIVE_LABEL
-import com.arcuscomputing.dictionary.DictionaryConstants.ADVERB
-import com.arcuscomputing.dictionary.DictionaryConstants.ADVERB_LABEL
-import com.arcuscomputing.dictionary.DictionaryConstants.FIELD_SEPARATOR
-import com.arcuscomputing.dictionary.DictionaryConstants.NOUN
-import com.arcuscomputing.dictionary.DictionaryConstants.NOUN_LABEL
-import com.arcuscomputing.dictionary.DictionaryConstants.OFFSET_INDEX
-import com.arcuscomputing.dictionary.DictionaryConstants.QUICK_MAX_READAHEAD
-import com.arcuscomputing.dictionary.DictionaryConstants.QUICK_MAX_TO_RETURN
-import com.arcuscomputing.dictionary.DictionaryConstants.TAGCOUNT_INDEX
-import com.arcuscomputing.dictionary.DictionaryConstants.VERB
-import com.arcuscomputing.dictionary.DictionaryConstants.VERB_LABEL
-import com.arcuscomputing.dictionary.DictionaryConstants.WORD_INDEX
+import com.arcuscomputing.dictionary.PartOfSpeech
 import timber.log.Timber
 import java.io.IOException
-import java.util.regex.Pattern
+
+private const val FIELD_SEPARATOR = "\t"
+private const val WORD_INDEX = 0
+private const val OFFSET_INDEX = 1
+private const val TAGCOUNT_INDEX = 1
+private const val QUICK_MAX_READAHEAD = 200
+private const val QUICK_MAX_TO_RETURN = 40
 
 class ArcusDictionary(private val dataFileManager: DataFileManager) {
 
-    private val pattern = Pattern.compile("^(\\w*?)\\s*?(\\d*?)$")
     private var loaded = false
     private var indexRaf: ReadRandom? = null
     private var definitionsRaf: ReadRandom? = null
 
     @Synchronized
-    fun ensureLoaded(context: Context) {
-        if (!loaded) initDatabases(context)
+    fun ensureLoaded() {
+        if (!loaded) initDatabases()
     }
 
     @Synchronized
-    private fun initDatabases(context: Context) {
+    private fun initDatabases() {
         if (loaded) return
 
         val dataFilesExist = when {
             !(dataFileManager.indexFileExists() && dataFileManager.dataFileExists()) ->
-                dataFileManager.extractRequiredFiles(context)
+                dataFileManager.extractRequiredFiles()
             dataFileManager.hashesAreOk() -> true
-            else -> dataFileManager.extractRequiredFiles(context)
+            else -> dataFileManager.extractRequiredFiles()
         }
 
         if (dataFilesExist) {
@@ -137,17 +128,10 @@ class ArcusDictionary(private val dataFileManager: DataFileManager) {
 
             var currentDef: String
             while (defsRandom.readLine().also { currentDef = it ?: "" } != null && currentDef != "") {
-                val type = currentDef.substring(0, 1)
+                val pos = PartOfSpeech.fromCode(currentDef.substring(0, 1)) ?: continue
                 val def = currentDef.substring(1)
                 val synonyms = getSynonyms(defsRandom)
-                val label = when (type) {
-                    NOUN -> NOUN_LABEL
-                    VERB -> VERB_LABEL
-                    ADVERB -> ADVERB_LABEL
-                    ADJECTIVE -> ADJECTIVE_LABEL
-                    else -> continue
-                }
-                list.add(WordModel(word, def, tagCount, synonyms, label))
+                list.add(WordModel(word, def, tagCount, synonyms, pos.label))
             }
         } catch (e: Exception) {
             Timber.e(e, "Unexpected error in addResultToList")
@@ -162,13 +146,11 @@ class ArcusDictionary(private val dataFileManager: DataFileManager) {
                 definitionsRaf.seek(pointer)
                 return ""
             }
-            val type = currentDef.substring(0, 1)
-            if (type == ADJECTIVE || type == VERB || type == NOUN || type == ADVERB) {
+            if (PartOfSpeech.fromCode(currentDef.substring(0, 1)) != null) {
                 definitionsRaf.seek(pointer)
                 ""
             } else {
-                val synonyms = currentDef.replace("|", ", ")
-                synonyms.dropLast(2)
+                currentDef.replace("|", ", ").dropLast(2)
             }
         } catch (e: IOException) {
             Timber.e(e, "Error getting synonyms")
@@ -182,13 +164,7 @@ class ArcusDictionary(private val dataFileManager: DataFileManager) {
         val exactIndex = list.indexOfFirst { it.word == query }
         if (exactIndex > 0) list.add(0, list.removeAt(exactIndex))
 
-        val trimmed = if (list.size > QUICK_MAX_TO_RETURN) list.subList(0, QUICK_MAX_TO_RETURN).toMutableList() else list
-
-        if (exactIndex == -1) {
-            trimmed.add(0, WordModel(word = query, definition = "No exact results for $query. Long press here for web searches.", tagCount = -1))
-        }
-
-        return trimmed
+        return if (list.size > QUICK_MAX_TO_RETURN) list.subList(0, QUICK_MAX_TO_RETURN) else list
     }
 
     @Synchronized

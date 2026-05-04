@@ -13,7 +13,8 @@ import java.util.zip.CRC32
 
 class DataFileManager(context: Context) {
 
-    private val dictionaryDataDir: File = requireNotNull(context.getExternalFilesDir(null)) {
+    private val appContext = context.applicationContext
+    private val dictionaryDataDir: File = requireNotNull(appContext.getExternalFilesDir(null)) {
         "Couldn't get a reference to external data directory."
     }
 
@@ -23,9 +24,9 @@ class DataFileManager(context: Context) {
     fun indexFileExists() = indexFile.exists()
     fun dataFileExists() = dataFile.exists()
 
-    fun extractRequiredFiles(context: Context): Boolean {
-        val indexOk = copyFile(context.resources.openRawResource(R.raw.index), dictionaryDataDir, "index.dat")
-        val defsOk = copyFile(context.resources.openRawResource(R.raw.wdefs_all), dictionaryDataDir, "wdefs_all.dat")
+    fun extractRequiredFiles(): Boolean {
+        val indexOk = copyFile(appContext.resources.openRawResource(R.raw.index), dictionaryDataDir, "index.dat")
+        val defsOk = copyFile(appContext.resources.openRawResource(R.raw.wdefs_all), dictionaryDataDir, "wdefs_all.dat")
         return indexOk && defsOk
     }
 
