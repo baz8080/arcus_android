@@ -34,7 +34,7 @@
                 android:textStyle="bold" />
 
             <ImageView
-                android:id="@+id/ShareIcon"
+                android:id="@+id/shareIcon"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:clickable="true"
@@ -45,7 +45,7 @@
                 app:tint="?attr/colorOnSurfaceVariant" />
 
             <ImageView
-                android:id="@+id/TtsIcon"
+                android:id="@+id/ttsIcon"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:clickable="true"
@@ -56,7 +56,7 @@
                 app:tint="?attr/colorOnSurfaceVariant" />
 
             <ImageView
-                android:id="@+id/FavIcon"
+                android:id="@+id/favIcon"
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:clickable="true"
