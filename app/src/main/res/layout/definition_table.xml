@@ -35,37 +35,34 @@
 
             <ImageView
                 android:id="@+id/ShareIcon"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginStart="4dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:clickable="true"
                 android:contentDescription="@string/click_to_share"
                 android:focusable="true"
-                android:padding="8dp"
+                android:padding="12dp"
                 android:src="@drawable/ic_share"
                 app:tint="?attr/colorOnSurfaceVariant" />
 
             <ImageView
                 android:id="@+id/TtsIcon"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginStart="4dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:clickable="true"
                 android:contentDescription="@string/click_to_hear_definition"
                 android:focusable="true"
-                android:padding="8dp"
+                android:padding="12dp"
                 android:src="@drawable/ic_play_arrow"
                 app:tint="?attr/colorOnSurfaceVariant" />
 
             <ImageView
                 android:id="@+id/FavIcon"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginStart="4dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
                 android:clickable="true"
                 android:contentDescription="@string/click_to_add_to_favourites"
                 android:focusable="true"
-                android:padding="8dp"
+                android:padding="12dp"
                 android:src="@drawable/ic_star_border"
                 app:tint="?attr/colorOnSurfaceVariant" />
 
