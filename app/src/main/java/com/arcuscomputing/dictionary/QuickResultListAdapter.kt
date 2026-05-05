@@ -7,17 +7,16 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageView
 import android.widget.TextView
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.arcuscomputing.dictionarypro.ads.databinding.DefinitionTableBinding
 import com.arcuscomputing.dictionarypro.ads.R
 
 class QuickResultListAdapter(
-    private val results: List<WordModel>,
-    initialFavourites: Set<Pair<String, String>>,
-    private val favouritesMode: Boolean,
     private val callbacks: Callbacks
-) : RecyclerView.Adapter<QuickResultListAdapter.ViewHolder>() {
+) : ListAdapter<WordModel, QuickResultListAdapter.ViewHolder>(DIFF_CALLBACK) {
 
     interface Callbacks {
         fun onWordClick(word: String)
@@ -26,65 +25,66 @@ class QuickResultListAdapter(
         fun onShare(word: String, definition: String)
     }
 
-    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        val headline: TextView = view.findViewById(R.id.definition_tv_headline)
-        val definition: TextView = view.findViewById(R.id.definition_tv_definition)
-        val type: TextView = view.findViewById(R.id.definition_tv_type)
-        val synonyms: TextView = view.findViewById(R.id.definition_tv_synonyms)
-        val favIcon: ImageView = view.findViewById(R.id.FavIcon)
-        val ttsIcon: ImageView = view.findViewById(R.id.TtsIcon)
-        val shareIcon: ImageView = view.findViewById(R.id.ShareIcon)
+    class ViewHolder(val binding: DefinitionTableBinding) : RecyclerView.ViewHolder(binding.root)
+
+    private val favourites = mutableSetOf<Pair<String, String>>()
+    private var favouritesMode = false
+
+    fun submit(
+        results: List<WordModel>,
+        favourites: Set<Pair<String, String>>,
+        favouritesMode: Boolean
+    ) {
+        this.favourites.clear()
+        this.favourites.addAll(favourites)
+        this.favouritesMode = favouritesMode
+        submitList(results)
     }
 
-    private val favourites = initialFavourites.toMutableSet()
-
-    fun getResults(): List<WordModel> = results
-
-    override fun getItemCount() = results.size
-
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.definition_table, parent, false)
-        return ViewHolder(view)
+        val binding = DefinitionTableBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+        return ViewHolder(binding)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val word = results[position]
+        val word = getItem(position)
+        val b = holder.binding
 
-        holder.headline.text = capitalize(word.word)
+        b.definitionTvHeadline.text = capitalize(word.word)
 
         val pos = if (favouritesMode) PartOfSpeech.fromAbbreviation(word.definition) else null
         val def = if (pos != null) word.definition.substringAfter(" ") else word.definition
         val displayType = pos?.label ?: word.type
 
-        holder.definition.apply {
+        b.definitionTvDefinition.apply {
             movementMethod = LinkMovementMethod.getInstance()
             setText(capitalize(def), TextView.BufferType.SPANNABLE)
             linkifyDefinition(this, def)
         }
 
-        holder.type.text = capitalize(displayType)
+        b.definitionTvType.text = capitalize(displayType)
 
         if (word.synonyms.isNotEmpty()) {
-            val synonymText = holder.synonyms.context.getString(R.string.synonyms_prefix, word.synonyms)
-            holder.synonyms.movementMethod = LinkMovementMethod.getInstance()
-            holder.synonyms.setText(synonymText, TextView.BufferType.SPANNABLE)
-            holder.synonyms.visibility = View.VISIBLE
-            linkifySynonyms(holder.synonyms, synonymText)
+            val synonymText = b.root.context.getString(R.string.synonyms_prefix, word.synonyms)
+            b.definitionTvSynonyms.movementMethod = LinkMovementMethod.getInstance()
+            b.definitionTvSynonyms.setText(synonymText, TextView.BufferType.SPANNABLE)
+            b.definitionTvSynonyms.visibility = View.VISIBLE
+            linkifySynonyms(b.definitionTvSynonyms, synonymText)
         } else {
-            holder.synonyms.visibility = View.GONE
+            b.definitionTvSynonyms.visibility = View.GONE
         }
 
         val storedDef = getStoredDefinition(word)
-        holder.favIcon.setImageResource(starIcon(word.word, storedDef))
-        holder.favIcon.setOnClickListener {
+        b.favIcon.setImageResource(starIcon(word.word, storedDef))
+        b.favIcon.setOnClickListener {
             val key = word.word to storedDef
             val adding = key !in favourites
             if (adding) favourites += key else favourites -= key
-            holder.favIcon.setImageResource(if (adding) R.drawable.ic_star else R.drawable.ic_star_border)
+            b.favIcon.setImageResource(if (adding) R.drawable.ic_star else R.drawable.ic_star_border)
             callbacks.onFavouriteToggled(word.word, storedDef, adding)
         }
-        holder.ttsIcon.setOnClickListener { callbacks.onSpeak(word.word) }
-        holder.shareIcon.setOnClickListener { callbacks.onShare(word.word, word.definition) }
+        b.ttsIcon.setOnClickListener { callbacks.onSpeak(word.word) }
+        b.shareIcon.setOnClickListener { callbacks.onShare(word.word, word.definition) }
     }
 
     private fun starIcon(word: String, definition: String) =
@@ -142,6 +142,14 @@ class QuickResultListAdapter(
             "goes", "whose", "what", "where",
             "when", "they", "from", "your", "into"
         )
+
+        private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<WordModel>() {
+            override fun areItemsTheSame(oldItem: WordModel, newItem: WordModel): Boolean =
+                oldItem.word == newItem.word && oldItem.definition == newItem.definition
+
+            override fun areContentsTheSame(oldItem: WordModel, newItem: WordModel): Boolean =
+                oldItem == newItem
+        }
 
         private fun capitalize(str: String?): String {
             if (str.isNullOrEmpty()) return str ?: ""
