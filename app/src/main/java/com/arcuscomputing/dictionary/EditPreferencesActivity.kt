@@ -2,15 +2,16 @@ package com.arcuscomputing.dictionary
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.preference.PreferenceFragmentCompat
 import com.arcuscomputing.dictionarypro.ads.R
+import com.arcuscomputing.dictionarypro.ads.databinding.ActivityPreferencesBinding
 
 class EditPreferencesActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_preferences)
-        setSupportActionBar(findViewById<Toolbar>(R.id.toolbar))
+        val binding = ActivityPreferencesBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        setSupportActionBar(binding.toolbar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
         if (savedInstanceState == null) {
