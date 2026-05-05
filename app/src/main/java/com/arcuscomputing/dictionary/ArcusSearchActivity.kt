@@ -110,7 +110,7 @@ class ArcusSearchActivity : AppCompatActivity(),
             .setCancelable(false)
             .show()
         lifecycleScope.launch {
-            withContext(Dispatchers.IO) { dictionary.ensureLoaded() }
+            dictionary.ensureLoaded()
             progress?.dismiss()
             progress = null
         }
@@ -147,9 +147,7 @@ class ArcusSearchActivity : AppCompatActivity(),
             rvResults.adapter = emptyAdapter()
             return
         }
-        val results = withContext(Dispatchers.IO) {
-            dictionary.getMatches(q, preferences.isPureAlpha)
-        }
+        val results = dictionary.getMatches(q, preferences.isPureAlpha)
         val favourites = withContext(Dispatchers.IO) { dbHelper.getFavouriteKeys() }
         rvResults.adapter = QuickResultListAdapter(results, favourites, false, this)
         if (results.isEmpty()) {
