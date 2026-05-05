@@ -7,18 +7,16 @@ import android.speech.tts.TextToSpeech
 import android.view.Menu
 import android.view.MenuItem
 import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.arcuscomputing.dictionary.FavouritesDbHelper.SortOrder
 import com.arcuscomputing.dictionarypro.ads.R
+import com.arcuscomputing.dictionarypro.ads.databinding.MainBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -29,47 +27,47 @@ import java.util.Locale
 class ArcusSearchActivity : AppCompatActivity(),
     TextToSpeech.OnInitListener, QuickResultListAdapter.Callbacks {
 
+    private lateinit var binding: MainBinding
     private lateinit var imm: InputMethodManager
-    private lateinit var et: EditText
-    private lateinit var rvResults: RecyclerView
+    private lateinit var dbHelper: FavouritesDbHelper
+    private lateinit var preferences: ArcusPreferences
+
+    private val resultsAdapter = QuickResultListAdapter(this)
 
     private var progress: AlertDialog? = null
     private var searchJob: Job? = null
-
-    private lateinit var dbHelper: FavouritesDbHelper
 
     private var optionsMenu: Menu? = null
     private var tts: TextToSpeech? = null
     private var ttsAvailable = false
     private var ttsLoadingMessageShown = false
     private var hasShownExitWarning = false
-    private lateinit var preferences: ArcusPreferences
     private val dictionary get() = (application as ArcusApplication).dictionary
     private val viewModel: SearchViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         tts = TextToSpeech(this, this)
-        setContentView(R.layout.main)
+        binding = MainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        setSupportActionBar(findViewById<Toolbar>(R.id.toolbar))
+        setSupportActionBar(binding.toolbar)
 
         dbHelper = FavouritesDbHelper(this)
-        et = findViewById(R.id.etSearch)
-        rvResults = findViewById(R.id.rvResults)
-        rvResults.layoutManager = LinearLayoutManager(this)
+        binding.rvResults.layoutManager = LinearLayoutManager(this)
+        binding.rvResults.adapter = resultsAdapter
         imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         preferences = ArcusPreferences(applicationContext)
 
-        et.doAfterTextChanged { editable ->
+        binding.etSearch.doAfterTextChanged { editable ->
             handleTextChanged(editable?.toString().orEmpty())
         }
 
         ensureResourcesLoaded()
         updateTitle()
 
-        rvResults.setOnTouchListener { _, _ ->
-            imm.hideSoftInputFromWindow(et.windowToken, 0)
+        binding.rvResults.setOnTouchListener { _, _ ->
+            imm.hideSoftInputFromWindow(binding.etSearch.windowToken, 0)
             false
         }
 
@@ -144,15 +142,15 @@ class ArcusSearchActivity : AppCompatActivity(),
     private suspend fun runSearch(query: String) {
         val q = query.trim()
         if (q.length < QUICK_MIN_SEARCH_LENGTH) {
-            rvResults.adapter = emptyAdapter()
+            resultsAdapter.submit(emptyList(), emptySet(), viewModel.mode == Mode.Favourites)
             return
         }
         val results = dictionary.getMatches(q, preferences.isPureAlpha)
         val favourites = withContext(Dispatchers.IO) { dbHelper.getFavouriteKeys() }
-        rvResults.adapter = QuickResultListAdapter(results, favourites, false, this)
+        resultsAdapter.submit(results, favourites, false)
         if (results.isEmpty()) {
             Toast.makeText(this, getString(R.string.no_results) + q, Toast.LENGTH_SHORT).show()
-            et.requestFocus()
+            binding.etSearch.requestFocus()
         }
     }
 
@@ -162,12 +160,9 @@ class ArcusSearchActivity : AppCompatActivity(),
                 dbHelper.getAllFavourites(viewModel.sortMethod)
             }
             val favSet = results.map { it.word to it.definition }.toSet()
-            rvResults.adapter = QuickResultListAdapter(results, favSet, true, this@ArcusSearchActivity)
+            resultsAdapter.submit(results, favSet, true)
         }
     }
-
-    private fun emptyAdapter() =
-        QuickResultListAdapter(emptyList(), emptySet(), viewModel.mode == Mode.Favourites, this)
 
     override fun onSearchRequested(): Boolean {
         handleSearchAction()
@@ -205,7 +200,7 @@ class ArcusSearchActivity : AppCompatActivity(),
     }
 
     private fun handleEmailFavouritesAction() {
-        val results = (rvResults.adapter as? QuickResultListAdapter)?.getResults() ?: return
+        val results = resultsAdapter.currentList
         if (results.isEmpty()) return
         val body = results.joinToString("\n\n") { "${it.word}\n${it.definition}" }
         startActivity(
@@ -221,9 +216,9 @@ class ArcusSearchActivity : AppCompatActivity(),
     }
 
     private fun handleSearchAction() {
-        et.requestFocus()
-        et.selectAll()
-        imm.showSoftInput(et, InputMethodManager.SHOW_FORCED)
+        binding.etSearch.requestFocus()
+        binding.etSearch.selectAll()
+        imm.showSoftInput(binding.etSearch, InputMethodManager.SHOW_FORCED)
         hasShownExitWarning = false
     }
 
@@ -232,11 +227,11 @@ class ArcusSearchActivity : AppCompatActivity(),
     }
 
     private fun handleFavouritesAction() {
-        viewModel.previous = PreviousState(viewModel.mode, et.text.toString())
+        viewModel.previous = PreviousState(viewModel.mode, binding.etSearch.text.toString())
         viewModel.mode = Mode.Favourites
         invalidateOptionsMenu()
         updateTitle()
-        et.setText("")
+        binding.etSearch.setText("")
         showFavourites()
         hasShownExitWarning = false
     }
@@ -293,7 +288,7 @@ class ArcusSearchActivity : AppCompatActivity(),
             invalidateOptionsMenu()
             updateTitle()
         }
-        et.setText(prev.text)
+        binding.etSearch.setText(prev.text)
         if (prev.mode == Mode.Favourites) showFavourites()
     }
 
@@ -351,13 +346,13 @@ class ArcusSearchActivity : AppCompatActivity(),
     }
 
     fun setQuery(newQuery: String) {
-        viewModel.previous = PreviousState(viewModel.mode, et.text.toString())
+        viewModel.previous = PreviousState(viewModel.mode, binding.etSearch.text.toString())
         if (viewModel.mode != Mode.Search) {
             viewModel.mode = Mode.Search
             invalidateOptionsMenu()
             updateTitle()
         }
-        et.setText(newQuery)
+        binding.etSearch.setText(newQuery)
     }
 
     companion object {
