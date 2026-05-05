@@ -4,7 +4,7 @@
 
     <application
         android:icon="@mipmap/ic_launcher"
-        android:name="com.arcuscomputing.ArcusApplication"
+        android:name="com.arcuscomputing.dictionary.ArcusApplication"
         android:label="@string/app_name"
         android:theme="@style/ArcusTheme" >
 

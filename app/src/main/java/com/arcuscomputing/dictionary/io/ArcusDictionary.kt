@@ -1,14 +1,11 @@
 package com.arcuscomputing.dictionary.io
 
-import com.arcuscomputing.WordModel
 import com.arcuscomputing.dictionary.PartOfSpeech
+import com.arcuscomputing.dictionary.WordModel
 import timber.log.Timber
 import java.io.IOException
 
 private const val FIELD_SEPARATOR = "\t"
-private const val WORD_INDEX = 0
-private const val OFFSET_INDEX = 1
-private const val TAGCOUNT_INDEX = 1
 private const val QUICK_MAX_READAHEAD = 200
 private const val QUICK_MAX_TO_RETURN = 40
 
@@ -20,44 +17,30 @@ class ArcusDictionary(private val dataFileManager: DataFileManager) {
 
     @Synchronized
     fun ensureLoaded() {
-        if (!loaded) initDatabases()
-    }
-
-    @Synchronized
-    private fun initDatabases() {
         if (loaded) return
-
-        val dataFilesExist = when {
-            !(dataFileManager.indexFileExists() && dataFileManager.dataFileExists()) ->
-                dataFileManager.extractRequiredFiles()
-            dataFileManager.hashesAreOk() -> true
-            else -> dataFileManager.extractRequiredFiles()
+        if (!dataFileManager.ensureExtracted()) {
+            Timber.e("Failed to extract dictionary data files")
+            return
         }
-
-        if (dataFilesExist) {
-            try {
-                indexRaf = ReadRandom(dataFileManager.indexFile, "r")
-                definitionsRaf = ReadRandom(dataFileManager.dataFile, "r")
-            } catch (e: IOException) {
-                Timber.e(e, "Unexpected error in initDatabases")
-            }
-        } else {
-            Timber.d("Data file does not exist")
+        try {
+            indexRaf = ReadRandom(dataFileManager.indexFile, "r")
+            definitionsRaf = ReadRandom(dataFileManager.dataFile, "r")
+            loaded = true
+        } catch (e: IOException) {
+            Timber.e(e, "Unexpected error opening dictionary files")
         }
-
-        loaded = dataFilesExist
     }
 
     @Synchronized
     fun getMatches(query: String, pureAlphaSort: Boolean): List<WordModel> {
-        if (query.length < 2 || !checkFiles()) return emptyList()
+        if (query.length < 2 || !loaded) return emptyList()
 
         val list = mutableListOf<WordModel>()
         val q = query.lowercase().trim()
 
         try {
             val index = checkNotNull(indexRaf)
-        val defs = checkNotNull(definitionsRaf)
+            val defs = checkNotNull(definitionsRaf)
             var low = 0L
             var high = index.length()
 
@@ -99,17 +82,6 @@ class ArcusDictionary(private val dataFileManager: DataFileManager) {
         return prepareResults(list, q, pureAlphaSort)
     }
 
-    private fun checkFiles(): Boolean {
-        return try {
-            if (indexRaf == null) indexRaf = ReadRandom(dataFileManager.indexFile, "r")
-            if (definitionsRaf == null) definitionsRaf = ReadRandom(dataFileManager.dataFile, "r")
-            true
-        } catch (e: IOException) {
-            Timber.e(e, "Unexpected error in checkFiles")
-            false
-        }
-    }
-
     private fun addResultToList(line: String, list: MutableList<WordModel>, defsRandom: ReadRandom) {
         val splitLine = line.split(FIELD_SEPARATOR)
         if (splitLine.size != 2) {
@@ -117,14 +89,14 @@ class ArcusDictionary(private val dataFileManager: DataFileManager) {
             return
         }
         try {
-            defsRandom.seek(splitLine[OFFSET_INDEX].toLong())
+            defsRandom.seek(splitLine[1].toLong())
             val defAndTagCount = defsRandom.readLine().split(FIELD_SEPARATOR)
             if (defAndTagCount.size != 2) {
                 Timber.e("Unexpected number of tokens after splitting defAndTagCount")
                 return
             }
-            val tagCount = defAndTagCount[TAGCOUNT_INDEX].toInt()
-            val word = splitLine[WORD_INDEX]
+            val tagCount = defAndTagCount[1].toInt()
+            val word = splitLine[0]
 
             var currentDef: String
             while (defsRandom.readLine().also { currentDef = it ?: "" } != null && currentDef != "") {
@@ -165,12 +137,5 @@ class ArcusDictionary(private val dataFileManager: DataFileManager) {
         if (exactIndex > 0) list.add(0, list.removeAt(exactIndex))
 
         return if (list.size > QUICK_MAX_TO_RETURN) list.subList(0, QUICK_MAX_TO_RETURN) else list
-    }
-
-    @Synchronized
-    fun closeFileHandles() {
-        try { indexRaf?.close() } catch (e: IOException) { Timber.e(e, "Exception closing indexRaf") }
-        try { definitionsRaf?.close() } catch (e: IOException) { Timber.e(e, "Exception closing definitionsRaf") }
-        loaded = false
     }
 }

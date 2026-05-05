@@ -1,4 +1,4 @@
-package com.arcuscomputing
+package com.arcuscomputing.dictionary
 
 import android.app.Application
 import com.arcuscomputing.dictionary.io.ArcusDictionary
