@@ -10,16 +10,9 @@
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize" />
 
-    <FrameLayout
+    <androidx.fragment.app.FragmentContainerView
         android:id="@+id/preferences_container"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <fragment
-            android:name="com.arcuscomputing.dictionary.EditPreferencesActivity$PrefsFragment"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-    </FrameLayout>
+        android:layout_height="match_parent" />
 
 </LinearLayout>

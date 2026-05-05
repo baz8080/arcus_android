@@ -1,4 +1,4 @@
-package com.arcuscomputing
+package com.arcuscomputing.dictionary
 
 import android.text.Spannable
 import android.text.method.LinkMovementMethod
@@ -10,18 +10,17 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.arcuscomputing.dictionary.PartOfSpeech
 import com.arcuscomputing.dictionarypro.ads.R
 
 class QuickResultListAdapter(
     private val results: List<WordModel>,
+    initialFavourites: Set<Pair<String, String>>,
+    private val favouritesMode: Boolean,
     private val callbacks: Callbacks
 ) : RecyclerView.Adapter<QuickResultListAdapter.ViewHolder>() {
 
     interface Callbacks {
-        fun inFavouritesMode(): Boolean
         fun onWordClick(word: String)
-        fun isFavourited(word: String, definition: String): Boolean
         fun onFavouriteToggled(word: String, definition: String, added: Boolean)
         fun onSpeak(word: String)
         fun onShare(word: String, definition: String)
@@ -37,6 +36,8 @@ class QuickResultListAdapter(
         val shareIcon: ImageView = view.findViewById(R.id.ShareIcon)
     }
 
+    private val favourites = initialFavourites.toMutableSet()
+
     fun getResults(): List<WordModel> = results
 
     override fun getItemCount() = results.size
@@ -51,7 +52,7 @@ class QuickResultListAdapter(
 
         holder.headline.text = capitalize(word.word)
 
-        val pos = if (callbacks.inFavouritesMode()) PartOfSpeech.fromAbbreviation(word.definition) else null
+        val pos = if (favouritesMode) PartOfSpeech.fromAbbreviation(word.definition) else null
         val def = if (pos != null) word.definition.substringAfter(" ") else word.definition
         val displayType = pos?.label ?: word.type
 
@@ -64,31 +65,33 @@ class QuickResultListAdapter(
         holder.type.text = capitalize(displayType)
 
         if (word.synonyms.isNotEmpty()) {
+            val synonymText = holder.synonyms.context.getString(R.string.synonyms_prefix, word.synonyms)
             holder.synonyms.movementMethod = LinkMovementMethod.getInstance()
-            holder.synonyms.setText("Synonyms: ${word.synonyms}", TextView.BufferType.SPANNABLE)
+            holder.synonyms.setText(synonymText, TextView.BufferType.SPANNABLE)
             holder.synonyms.visibility = View.VISIBLE
-            linkifySynonyms(holder.synonyms, holder.synonyms.text.toString())
+            linkifySynonyms(holder.synonyms, synonymText)
         } else {
             holder.synonyms.visibility = View.GONE
         }
 
         val storedDef = getStoredDefinition(word)
-        holder.favIcon.setImageResource(
-            if (callbacks.isFavourited(word.word, storedDef)) R.drawable.ic_star
-            else R.drawable.ic_star_border
-        )
+        holder.favIcon.setImageResource(starIcon(word.word, storedDef))
         holder.favIcon.setOnClickListener {
-            val d = getStoredDefinition(word)
-            val adding = !callbacks.isFavourited(word.word, d)
-            callbacks.onFavouriteToggled(word.word, d, adding)
+            val key = word.word to storedDef
+            val adding = key !in favourites
+            if (adding) favourites += key else favourites -= key
             holder.favIcon.setImageResource(if (adding) R.drawable.ic_star else R.drawable.ic_star_border)
+            callbacks.onFavouriteToggled(word.word, storedDef, adding)
         }
         holder.ttsIcon.setOnClickListener { callbacks.onSpeak(word.word) }
         holder.shareIcon.setOnClickListener { callbacks.onShare(word.word, word.definition) }
     }
 
+    private fun starIcon(word: String, definition: String) =
+        if ((word to definition) in favourites) R.drawable.ic_star else R.drawable.ic_star_border
+
     private fun getStoredDefinition(word: WordModel): String {
-        if (callbacks.inFavouritesMode()) return word.definition
+        if (favouritesMode) return word.definition
         val pos = PartOfSpeech.fromLabel(word.type) ?: return word.definition
         return "${pos.abbreviation} ${word.definition}"
     }
@@ -101,10 +104,12 @@ class QuickResultListAdapter(
             var spacePos = definition.indexOf(" ", currentStart)
             val done = spacePos == -1
             if (done) spacePos = definition.length
-            val currentWord = definition.substring(currentStart, spacePos).replace(Regex(CLEAN_PATTERN), " ")
-            if (currentWord.length > 3 && !SIMPLE_WORDS.contains(currentWord)) {
+            val cleaned = definition.substring(currentStart, spacePos)
+                .replace(Regex(CLEAN_PATTERN), " ")
+                .trim()
+            if (cleaned.length > 3 && cleaned !in SIMPLE_WORDS) {
                 span.setSpan(object : ClickableSpan() {
-                    override fun onClick(widget: View) { callbacks.onWordClick(currentWord) }
+                    override fun onClick(widget: View) { callbacks.onWordClick(cleaned) }
                 }, currentStart, spacePos, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
             if (done) break
@@ -115,7 +120,8 @@ class QuickResultListAdapter(
     private fun linkifySynonyms(tv: TextView, synString: String) {
         val span = tv.text as Spannable
         tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, tv.textSize + 1.5f)
-        var currentStart = synString.indexOf(" ") + 1
+        val firstSpace = synString.indexOf(" ")
+        var currentStart = if (firstSpace >= 0) firstSpace + 1 else return
         while (true) {
             var commaPos = synString.indexOf(",", currentStart)
             val done = commaPos == -1

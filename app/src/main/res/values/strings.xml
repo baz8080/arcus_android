@@ -5,9 +5,6 @@
 
     <string name="init_text">Arcus Dictionary Pro is initialising.\n\nVerifying data and upgrading file if required.\n\nThis usually takes around 10 seconds for an upgrade or about 2 to 3 seconds otherwise.</string>
     <string name="init_caption">Initialising…</string>
-    <string name="no_sd_card_title">Dictionary is not available</string>
-    <string name="no_sd_card_message">The dictionary is not available when you have your Android phone mounted as an external disk.  Please start the application again when you have unmounted the external disk.</string>
-    <string name="no_sd_card_button_message">Click to exit</string>
     <string name="no_results">No results for: </string>
     <string name="exit_message">Press back once more to exit</string>
 
@@ -44,16 +41,16 @@
     <!-- HELP -->
     <string name="help_text">Type to search, results will appear in real-time.\nClick a star to save a word to or remove from favourites.\nClick the menu button to view favourites and change word sorting from smart ordering (frequency analysis) to pure alphabetical ordering.</string>
 
-    <!-- ABOUT -->
+    <!-- Share / email -->
+    <string name="synonyms_prefix">Synonyms: %1$s</string>
+    <string name="share_chooser_title">Share word</string>
+    <string name="share_message">Shared by Arcus Dictionary\n%1$s: %2$s</string>
+    <string name="email_chooser_title">Send mail…</string>
+    <string name="email_subject">My Favourites from Arcus Dictionary</string>
 
-    <!-- SPECIAL MODES -->
-    <string name="favourites_mode">special:favourites</string>
     <!-- Toast, i love toast -->
     <string name="favourites_toast_added"> added to favourites</string>
     <string name="favourites_toast_removed"> removed from favourites</string>
-
-    <!-- ABOUT APPLICATION -->
-
 
     <!-- Speech -->
     <string name="tts_install_header">Install voice data</string>

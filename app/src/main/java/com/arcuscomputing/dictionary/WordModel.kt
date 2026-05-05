@@ -1,4 +1,4 @@
-package com.arcuscomputing
+package com.arcuscomputing.dictionary
 
 data class WordModel(
     val word: String = "",

@@ -4,8 +4,6 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.os.Bundle
 import android.speech.tts.TextToSpeech
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.Menu
 import android.view.MenuItem
 import android.view.inputmethod.InputMethodManager
@@ -15,13 +13,11 @@ import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.arcuscomputing.ArcusApplication
-import com.arcuscomputing.FavouritesDbHelper
-import com.arcuscomputing.FavouritesDbHelper.SortOrder
-import com.arcuscomputing.QuickResultListAdapter
+import com.arcuscomputing.dictionary.FavouritesDbHelper.SortOrder
 import com.arcuscomputing.dictionarypro.ads.R
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -30,7 +26,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
 
-class ArcusSearchActivity : AppCompatActivity(), TextWatcher,
+class ArcusSearchActivity : AppCompatActivity(),
     TextToSpeech.OnInitListener, QuickResultListAdapter.Callbacks {
 
     private lateinit var imm: InputMethodManager
@@ -40,8 +36,7 @@ class ArcusSearchActivity : AppCompatActivity(), TextWatcher,
     private var progress: AlertDialog? = null
     private var searchJob: Job? = null
 
-    lateinit var dbHelper: FavouritesDbHelper
-        private set
+    private lateinit var dbHelper: FavouritesDbHelper
 
     private var optionsMenu: Menu? = null
     private var tts: TextToSpeech? = null
@@ -66,24 +61,27 @@ class ArcusSearchActivity : AppCompatActivity(), TextWatcher,
         imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
         preferences = ArcusPreferences(applicationContext)
 
-        et.addTextChangedListener(this)
+        et.doAfterTextChanged { editable ->
+            handleTextChanged(editable?.toString().orEmpty())
+        }
+
         ensureResourcesLoaded()
+        updateTitle()
 
         rvResults.setOnTouchListener { _, _ ->
             imm.hideSoftInputFromWindow(et.windowToken, 0)
             false
         }
 
-        val initialWord = intent.getStringExtra(INITIAL_WORD)
-        if (!initialWord.isNullOrEmpty()) setQuery(initialWord)
+        if (viewModel.mode == Mode.Favourites) showFavourites()
+
+        intent.getStringExtra(INITIAL_WORD)?.takeIf { it.isNotEmpty() }?.let(::setQuery)
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
+                val prev = viewModel.previous
                 when {
-                    viewModel.previousWord != null || inFavouritesMode() -> {
-                        et.setText(viewModel.previousWord)
-                        viewModel.previousWord = null
-                    }
+                    prev != null -> restorePreviousState(prev)
                     !hasShownExitWarning -> {
                         makeToast(getString(R.string.exit_message))
                         hasShownExitWarning = true
@@ -94,49 +92,84 @@ class ArcusSearchActivity : AppCompatActivity(), TextWatcher,
         })
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        intent.getStringExtra(INITIAL_WORD)?.takeIf { it.isNotEmpty() }?.let(::setQuery)
+    }
+
     override fun onResume() {
         super.onResume()
         hasShownExitWarning = false
     }
 
     private fun ensureResourcesLoaded() {
-        if (!externalStorageAvailable()) {
-            et.setText("")
-            AlertDialog.Builder(this)
-                .setTitle(getString(R.string.no_sd_card_title))
-                .setMessage(getString(R.string.no_sd_card_message))
-                .setPositiveButton(getString(R.string.no_sd_card_button_message)) { _, _ ->
-                    dictionary.closeFileHandles()
-                    finish()
-                }
-                .show()
-        }
         progress = AlertDialog.Builder(this)
             .setTitle(getString(R.string.init_caption))
             .setMessage(getString(R.string.init_text))
             .setCancelable(false)
             .show()
-        lifecycleScope.launch(Dispatchers.IO) {
-            dictionary.ensureLoaded()
-            withContext(Dispatchers.Main) { progress?.dismiss() }
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) { dictionary.ensureLoaded() }
+            progress?.dismiss()
+            progress = null
         }
     }
 
     override fun onDestroy() {
-        dictionary.closeFileHandles()
+        progress?.dismiss()
+        progress = null
         tts?.stop()
         tts?.shutdown()
         dbHelper.close()
         super.onDestroy()
     }
 
-    override fun afterTextChanged(query: Editable) {
+    private fun handleTextChanged(text: String) {
+        if (viewModel.mode == Mode.Favourites) {
+            if (text.isEmpty()) return
+            enterSearchMode()
+        }
+        scheduleSearch(text)
+    }
+
+    private fun scheduleSearch(query: String) {
         searchJob?.cancel()
         searchJob = lifecycleScope.launch {
             delay(SEARCH_SLEEP_TIME)
-            doSearchResult(query.toString())
+            runSearch(query)
         }
     }
+
+    private suspend fun runSearch(query: String) {
+        val q = query.trim()
+        if (q.length < QUICK_MIN_SEARCH_LENGTH) {
+            rvResults.adapter = emptyAdapter()
+            return
+        }
+        val results = withContext(Dispatchers.IO) {
+            dictionary.getMatches(q, preferences.isPureAlpha)
+        }
+        val favourites = withContext(Dispatchers.IO) { dbHelper.getFavouriteKeys() }
+        rvResults.adapter = QuickResultListAdapter(results, favourites, false, this)
+        if (results.isEmpty()) {
+            Toast.makeText(this, getString(R.string.no_results) + q, Toast.LENGTH_SHORT).show()
+            et.requestFocus()
+        }
+    }
+
+    private fun showFavourites() {
+        lifecycleScope.launch {
+            val results = withContext(Dispatchers.IO) {
+                dbHelper.getAllFavourites(viewModel.sortMethod)
+            }
+            val favSet = results.map { it.word to it.definition }.toSet()
+            rvResults.adapter = QuickResultListAdapter(results, favSet, true, this@ArcusSearchActivity)
+        }
+    }
+
+    private fun emptyAdapter() =
+        QuickResultListAdapter(emptyList(), emptySet(), viewModel.mode == Mode.Favourites, this)
 
     override fun onSearchRequested(): Boolean {
         handleSearchAction()
@@ -150,7 +183,7 @@ class ArcusSearchActivity : AppCompatActivity(), TextWatcher,
     }
 
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
-        val favouritesMode = inFavouritesMode()
+        val favouritesMode = viewModel.mode == Mode.Favourites
         listOf(R.id.menu_search, R.id.menu_favourites, R.id.menu_settings).forEach {
             menu.findItem(it)?.isVisible = !favouritesMode
         }
@@ -180,11 +213,11 @@ class ArcusSearchActivity : AppCompatActivity(), TextWatcher,
         startActivity(
             Intent.createChooser(
                 Intent(Intent.ACTION_SEND).apply {
-                    type = "plain/text"
-                    putExtra(Intent.EXTRA_SUBJECT, "My Favourites from Arcus Dictionary")
+                    type = "text/plain"
+                    putExtra(Intent.EXTRA_SUBJECT, getString(R.string.email_subject))
                     putExtra(Intent.EXTRA_TEXT, body)
                 },
-                "Send mail..."
+                getString(R.string.email_chooser_title)
             )
         )
     }
@@ -201,9 +234,12 @@ class ArcusSearchActivity : AppCompatActivity(), TextWatcher,
     }
 
     private fun handleFavouritesAction() {
-        val currentText = et.text.toString().trim()
-        viewModel.previousWord = if (currentText.isNotEmpty() && currentText != getString(R.string.favourites_mode)) currentText else ""
-        et.setText(getString(R.string.favourites_mode))
+        viewModel.previous = PreviousState(viewModel.mode, et.text.toString())
+        viewModel.mode = Mode.Favourites
+        invalidateOptionsMenu()
+        updateTitle()
+        et.setText("")
+        showFavourites()
         hasShownExitWarning = false
     }
 
@@ -213,8 +249,10 @@ class ArcusSearchActivity : AppCompatActivity(), TextWatcher,
             .setCancelable(false)
             .setNegativeButton(getString(R.string.dialogue_no), null)
             .setPositiveButton(getString(R.string.dialogue_yes)) { _, _ ->
-                dbHelper.deleteAllFavourites()
-                refreshFavourites()
+                lifecycleScope.launch {
+                    withContext(Dispatchers.IO) { dbHelper.deleteAllFavourites() }
+                    showFavourites()
+                }
             }
             .show()
     }
@@ -228,7 +266,7 @@ class ArcusSearchActivity : AppCompatActivity(), TextWatcher,
             viewModel.sortMethod = SortOrder.DATE_DESC
             item.setTitle(R.string.menu_sort_date_asc)
         }
-        refreshFavourites()
+        showFavourites()
     }
 
     private fun handleAlphaSortAction() {
@@ -240,40 +278,33 @@ class ArcusSearchActivity : AppCompatActivity(), TextWatcher,
             viewModel.sortMethod = SortOrder.ALPHA_DESC
             item.setTitle(R.string.menu_sort_alpha_asc)
         }
-        refreshFavourites()
+        showFavourites()
     }
 
-    private fun externalStorageAvailable() =
-        android.os.Environment.MEDIA_MOUNTED == android.os.Environment.getExternalStorageState()
+    private fun enterSearchMode() {
+        if (viewModel.mode == Mode.Search) return
+        viewModel.mode = Mode.Search
+        invalidateOptionsMenu()
+        updateTitle()
+    }
 
-    private fun doSearchResult(query: String) {
-        val q = query.trim()
-        if (q.length < QUICK_MIN_SEARCH_LENGTH) {
-            rvResults.adapter = QuickResultListAdapter(emptyList(), this)
-            return
+    private fun restorePreviousState(prev: PreviousState) {
+        viewModel.previous = null
+        if (viewModel.mode != prev.mode) {
+            viewModel.mode = prev.mode
+            invalidateOptionsMenu()
+            updateTitle()
         }
-        when (q) {
-            getString(R.string.favourites_mode) ->
-                rvResults.adapter = QuickResultListAdapter(dbHelper.getAllFavourites(viewModel.sortMethod), this)
-            else -> {
-                val adapter = QuickResultListAdapter(dictionary.getMatches(q, preferences.isPureAlpha), this)
-                rvResults.adapter = adapter
-                if (adapter.itemCount == 0) {
-                    Toast.makeText(this, getString(R.string.no_results) + q, Toast.LENGTH_SHORT).show()
-                    et.requestFocus()
-                }
-            }
+        et.setText(prev.text)
+        if (prev.mode == Mode.Favourites) showFavourites()
+    }
+
+    private fun updateTitle() {
+        supportActionBar?.title = when (viewModel.mode) {
+            Mode.Search -> getString(R.string.app_name)
+            Mode.Favourites -> getString(R.string.menu_favourites)
         }
     }
-
-    override fun inFavouritesMode() = et.text.toString().trim() == getString(R.string.favourites_mode)
-
-    fun refreshFavourites() {
-        et.setText(getString(R.string.favourites_mode))
-    }
-
-    override fun beforeTextChanged(s: CharSequence, start: Int, count: Int, after: Int) {}
-    override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {}
 
     fun makeToast(text: String) = Toast.makeText(this, text, Toast.LENGTH_SHORT).show()
 
@@ -287,14 +318,13 @@ class ArcusSearchActivity : AppCompatActivity(), TextWatcher,
     }
 
     // QuickResultListAdapter.Callbacks
-    override fun isFavourited(word: String, definition: String) = dbHelper.isFavourite(word, definition)
-
     override fun onFavouriteToggled(word: String, definition: String, added: Boolean) {
-        if (added) {
-            dbHelper.insertFavourite(word, definition)
-        } else {
-            dbHelper.deleteFromFavourites(word, definition)
-            if (inFavouritesMode()) refreshFavourites()
+        lifecycleScope.launch {
+            withContext(Dispatchers.IO) {
+                if (added) dbHelper.insertFavourite(word, definition)
+                else dbHelper.deleteFromFavourites(word, definition)
+            }
+            if (!added && viewModel.mode == Mode.Favourites) showFavourites()
         }
     }
 
@@ -305,9 +335,9 @@ class ArcusSearchActivity : AppCompatActivity(), TextWatcher,
             Intent.createChooser(
                 Intent(Intent.ACTION_SEND).apply {
                     type = "text/plain"
-                    putExtra(Intent.EXTRA_TEXT, "Shared by Arcus Dictionary\n$word: $definition")
+                    putExtra(Intent.EXTRA_TEXT, getString(R.string.share_message, word, definition))
                 },
-                "Share word"
+                getString(R.string.share_chooser_title)
             )
         )
     }
@@ -322,11 +352,14 @@ class ArcusSearchActivity : AppCompatActivity(), TextWatcher,
         }
     }
 
-    fun setQuery(newQuery: String?) {
-        if (newQuery != null) {
-            viewModel.previousWord = et.text.toString()
-            et.setText(newQuery)
+    fun setQuery(newQuery: String) {
+        viewModel.previous = PreviousState(viewModel.mode, et.text.toString())
+        if (viewModel.mode != Mode.Search) {
+            viewModel.mode = Mode.Search
+            invalidateOptionsMenu()
+            updateTitle()
         }
+        et.setText(newQuery)
     }
 
     companion object {

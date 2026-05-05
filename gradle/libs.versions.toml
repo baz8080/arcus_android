@@ -1,0 +1,26 @@
+[versions]
+agp = "9.2.0"
+kotlin = "2.2.10"
+appcompat = "1.7.1"
+activity = "1.10.1"
+lifecycle = "2.8.7"
+preference = "1.2.1"
+annotation = "1.10.0"
+material = "1.13.0"
+timber = "5.0.1"
+okio = "3.17.0"
+
+[libraries]
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
+androidx-activity-ktx = { module = "androidx.activity:activity-ktx", version.ref = "activity" }
+androidx-lifecycle-viewmodel-ktx = { module = "androidx.lifecycle:lifecycle-viewmodel-ktx", version.ref = "lifecycle" }
+androidx-lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle" }
+androidx-preference-ktx = { module = "androidx.preference:preference-ktx", version.ref = "preference" }
+androidx-annotation = { module = "androidx.annotation:annotation", version.ref = "annotation" }
+google-material = { module = "com.google.android.material:material", version.ref = "material" }
+timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
+okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

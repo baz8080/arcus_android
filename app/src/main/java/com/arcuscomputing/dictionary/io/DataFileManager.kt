@@ -1,6 +1,8 @@
 package com.arcuscomputing.dictionary.io
 
 import android.content.Context
+import androidx.core.content.edit
+import androidx.preference.PreferenceManager
 import com.arcuscomputing.dictionarypro.ads.R
 import okio.buffer
 import okio.sink
@@ -8,75 +10,39 @@ import okio.source
 import timber.log.Timber
 import java.io.File
 import java.io.IOException
-import java.io.InputStream
-import java.util.zip.CRC32
 
 class DataFileManager(context: Context) {
 
     private val appContext = context.applicationContext
-    private val dictionaryDataDir: File = requireNotNull(appContext.getExternalFilesDir(null)) {
-        "Couldn't get a reference to external data directory."
+    private val prefs = PreferenceManager.getDefaultSharedPreferences(appContext)
+
+    val indexFile = File(appContext.filesDir, "index.dat")
+    val dataFile = File(appContext.filesDir, "wdefs_all.dat")
+
+    fun ensureExtracted(): Boolean {
+        if (prefs.getInt(VERSION_KEY, 0) == DATA_VERSION
+            && indexFile.exists()
+            && dataFile.exists()
+        ) return true
+
+        val ok = copyResource(R.raw.index, indexFile) && copyResource(R.raw.wdefs_all, dataFile)
+        if (ok) prefs.edit { putInt(VERSION_KEY, DATA_VERSION) }
+        return ok
     }
 
-    val indexFile = File(dictionaryDataDir, "index.dat")
-    val dataFile = File(dictionaryDataDir, "wdefs_all.dat")
-
-    fun indexFileExists() = indexFile.exists()
-    fun dataFileExists() = dataFile.exists()
-
-    fun extractRequiredFiles(): Boolean {
-        val indexOk = copyFile(appContext.resources.openRawResource(R.raw.index), dictionaryDataDir, "index.dat")
-        val defsOk = copyFile(appContext.resources.openRawResource(R.raw.wdefs_all), dictionaryDataDir, "wdefs_all.dat")
-        return indexOk && defsOk
-    }
-
-    fun hashesAreOk(): Boolean {
-        val indexHash = computeCRC32(indexFile)
-        val dataHash = computeCRC32(dataFile)
-        return if (indexHash != null && dataHash != null) {
-            val ok = indexHash == INDEX_HASH && dataHash == DEFINITIONS_HASH
-            if (!ok) Timber.e("Hashes are not as expected")
-            ok
-        } else {
-            Timber.e("Hashes are null")
-            false
+    private fun copyResource(resId: Int, destination: File): Boolean = try {
+        appContext.resources.openRawResource(resId).source().buffer().use { source ->
+            destination.sink().buffer().use { sink -> sink.writeAll(source) }
         }
-    }
-
-    private fun computeCRC32(file: File): String? {
-        val crc = CRC32()
-        return try {
-            file.inputStream().use { fis ->
-                val buffer = ByteArray(BUFFER_SIZE)
-                var bytesRead: Int
-                while (fis.read(buffer).also { bytesRead = it } > 0) {
-                    crc.update(buffer, 0, bytesRead)
-                }
-            }
-            java.lang.Long.toHexString(crc.value)
-        } catch (e: Exception) {
-            null
-        }
-    }
-
-    private fun copyFile(inputStream: InputStream, directory: File, fileName: String): Boolean {
-        return try {
-            val destination = File(directory, fileName)
-            inputStream.source().buffer().use { source ->
-                destination.sink().buffer().use { sink ->
-                    sink.writeAll(source)
-                }
-            }
-            true
-        } catch (e: IOException) {
-            Timber.e(e, "Error copying file %s", fileName)
-            false
-        }
+        true
+    } catch (e: IOException) {
+        Timber.e(e, "Error copying %s", destination.name)
+        false
     }
 
     companion object {
-        private const val INDEX_HASH = "336996dd"
-        private const val DEFINITIONS_HASH = "cb10b5de"
-        private const val BUFFER_SIZE = 8192
+        // Bump when the bundled data files change so they get re-extracted.
+        private const val DATA_VERSION = 1
+        private const val VERSION_KEY = "data_version"
     }
 }
