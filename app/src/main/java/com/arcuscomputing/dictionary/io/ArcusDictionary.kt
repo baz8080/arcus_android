@@ -2,6 +2,9 @@ package com.arcuscomputing.dictionary.io
 
 import com.arcuscomputing.dictionary.PartOfSpeech
 import com.arcuscomputing.dictionary.WordModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import java.io.IOException
 
@@ -11,16 +14,20 @@ private const val QUICK_MAX_TO_RETURN = 40
 
 class ArcusDictionary(private val dataFileManager: DataFileManager) {
 
+    // Single-threaded dispatcher serialises all access to the RandomAccessFile
+    // pair below, so the mutable seek state can't race across coroutines.
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val dispatcher = Dispatchers.IO.limitedParallelism(1)
+
     private var loaded = false
     private var indexRaf: ReadRandom? = null
     private var definitionsRaf: ReadRandom? = null
 
-    @Synchronized
-    fun ensureLoaded() {
-        if (loaded) return
+    suspend fun ensureLoaded() = withContext(dispatcher) {
+        if (loaded) return@withContext
         if (!dataFileManager.ensureExtracted()) {
             Timber.e("Failed to extract dictionary data files")
-            return
+            return@withContext
         }
         try {
             indexRaf = ReadRandom(dataFileManager.indexFile, "r")
@@ -31,9 +38,8 @@ class ArcusDictionary(private val dataFileManager: DataFileManager) {
         }
     }
 
-    @Synchronized
-    fun getMatches(query: String, pureAlphaSort: Boolean): List<WordModel> {
-        if (query.length < 2 || !loaded) return emptyList()
+    suspend fun getMatches(query: String, pureAlphaSort: Boolean): List<WordModel> = withContext(dispatcher) {
+        if (query.length < 2 || !loaded) return@withContext emptyList()
 
         val list = mutableListOf<WordModel>()
         val q = query.lowercase().trim()
@@ -79,7 +85,7 @@ class ArcusDictionary(private val dataFileManager: DataFileManager) {
             Timber.e(e, "Unexpected error in getMatches")
         }
 
-        return prepareResults(list, q, pureAlphaSort)
+        prepareResults(list, q, pureAlphaSort)
     }
 
     private fun addResultToList(line: String, list: MutableList<WordModel>, defsRandom: ReadRandom) {
