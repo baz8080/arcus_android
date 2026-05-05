@@ -14,14 +14,14 @@ private const val QUICK_MAX_TO_RETURN = 40
 
 class ArcusDictionary(private val dataFileManager: DataFileManager) {
 
-    // Single-threaded dispatcher serialises all access to the RandomAccessFile
-    // pair below, so the mutable seek state can't race across coroutines.
+    // Single-threaded dispatcher serialises all access to the mapped buffers
+    // below, since each MappedByteBuffer carries mutable position state.
     @OptIn(ExperimentalCoroutinesApi::class)
     private val dispatcher = Dispatchers.IO.limitedParallelism(1)
 
     private var loaded = false
-    private var indexRaf: ReadRandom? = null
-    private var definitionsRaf: ReadRandom? = null
+    private var index: MappedFile? = null
+    private var definitions: MappedFile? = null
 
     suspend fun ensureLoaded() = withContext(dispatcher) {
         if (loaded) return@withContext
@@ -30,8 +30,8 @@ class ArcusDictionary(private val dataFileManager: DataFileManager) {
             return@withContext
         }
         try {
-            indexRaf = ReadRandom(dataFileManager.indexFile, "r")
-            definitionsRaf = ReadRandom(dataFileManager.dataFile, "r")
+            index = MappedFile(dataFileManager.indexFile)
+            definitions = MappedFile(dataFileManager.dataFile)
             loaded = true
         } catch (e: IOException) {
             Timber.e(e, "Unexpected error opening dictionary files")
@@ -45,22 +45,22 @@ class ArcusDictionary(private val dataFileManager: DataFileManager) {
         val q = query.lowercase().trim()
 
         try {
-            val index = checkNotNull(indexRaf)
-            val defs = checkNotNull(definitionsRaf)
+            val idx = checkNotNull(index)
+            val defs = checkNotNull(definitions)
             var low = 0L
-            var high = index.length()
+            var high = idx.length
 
             while (low < high) {
                 val mid = (low + high) / 2
                 var p = mid
                 while (p >= 0) {
-                    index.seek(p)
-                    if (index.readByte().toInt().toChar() == '\n') break
+                    idx.seek(p)
+                    if (idx.readByte().toInt().toChar() == '\n') break
                     p--
                 }
-                if (p < 0) index.seek(0)
+                if (p < 0) idx.seek(0)
 
-                val line = index.getNextLine() ?: break
+                val line = idx.readLine() ?: break
                 if (line.substring(0, line.indexOf(FIELD_SEPARATOR)).compareTo(q) < 0) {
                     low = mid + 1
                 } else {
@@ -70,14 +70,14 @@ class ArcusDictionary(private val dataFileManager: DataFileManager) {
 
             var p = low
             while (p >= 0) {
-                index.seek(p)
-                if (index.readByte().toInt().toChar() == '\n') break
+                idx.seek(p)
+                if (idx.readByte().toInt().toChar() == '\n') break
                 p--
             }
-            if (p < 0) index.seek(0)
+            if (p < 0) idx.seek(0)
 
             while (true) {
-                val line = index.getNextLine() ?: break
+                val line = idx.readLine() ?: break
                 if (!line.startsWith(q) || list.size > QUICK_MAX_READAHEAD) break
                 addResultToList(line, list, defs)
             }
@@ -88,15 +88,15 @@ class ArcusDictionary(private val dataFileManager: DataFileManager) {
         prepareResults(list, q, pureAlphaSort)
     }
 
-    private fun addResultToList(line: String, list: MutableList<WordModel>, defsRandom: ReadRandom) {
+    private fun addResultToList(line: String, list: MutableList<WordModel>, defs: MappedFile) {
         val splitLine = line.split(FIELD_SEPARATOR)
         if (splitLine.size != 2) {
             Timber.e("Unexpected number of tokens after splitting line")
             return
         }
         try {
-            defsRandom.seek(splitLine[1].toLong())
-            val defAndTagCount = defsRandom.readLine().split(FIELD_SEPARATOR)
+            defs.seek(splitLine[1].toLong())
+            val defAndTagCount = defs.readLine()?.split(FIELD_SEPARATOR) ?: return
             if (defAndTagCount.size != 2) {
                 Timber.e("Unexpected number of tokens after splitting defAndTagCount")
                 return
@@ -105,10 +105,10 @@ class ArcusDictionary(private val dataFileManager: DataFileManager) {
             val word = splitLine[0]
 
             var currentDef: String
-            while (defsRandom.readLine().also { currentDef = it ?: "" } != null && currentDef != "") {
+            while (defs.readLine().also { currentDef = it ?: "" } != null && currentDef != "") {
                 val pos = PartOfSpeech.fromCode(currentDef.substring(0, 1)) ?: continue
                 val def = currentDef.substring(1)
-                val synonyms = getSynonyms(defsRandom)
+                val synonyms = getSynonyms(defs)
                 list.add(WordModel(word, def, tagCount, synonyms, pos.label))
             }
         } catch (e: Exception) {
@@ -116,16 +116,16 @@ class ArcusDictionary(private val dataFileManager: DataFileManager) {
         }
     }
 
-    private fun getSynonyms(definitionsRaf: ReadRandom): String {
+    private fun getSynonyms(defs: MappedFile): String {
         return try {
-            val pointer = definitionsRaf.filePointer
-            val currentDef = definitionsRaf.readLine() ?: return ""
+            val pointer = defs.position
+            val currentDef = defs.readLine() ?: return ""
             if (currentDef.isEmpty()) {
-                definitionsRaf.seek(pointer)
+                defs.seek(pointer)
                 return ""
             }
             if (PartOfSpeech.fromCode(currentDef.substring(0, 1)) != null) {
-                definitionsRaf.seek(pointer)
+                defs.seek(pointer)
                 ""
             } else {
                 currentDef.replace("|", ", ").dropLast(2)
