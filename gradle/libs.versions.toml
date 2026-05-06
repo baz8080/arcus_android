@@ -1,5 +1,5 @@
 [versions]
-agp = "9.2.0"
+agp = "9.2.1"
 kotlin = "2.2.10"
 appcompat = "1.7.1"
 activity = "1.10.1"
@@ -9,6 +9,11 @@ annotation = "1.10.0"
 material = "1.13.0"
 timber = "5.0.1"
 okio = "3.17.0"
+junit = "4.13.2"
+mockito-kotlin = "5.4.0"
+robolectric = "4.14.1"
+kotlin-coroutines-test = "1.10.1"
+androidx-test-core = "1.6.1"
 
 [libraries]
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
@@ -20,6 +25,11 @@ androidx-annotation = { module = "androidx.annotation:annotation", version.ref =
 google-material = { module = "com.google.android.material:material", version.ref = "material" }
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
+junit = { module = "junit:junit", version.ref = "junit" }
+mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockito-kotlin" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
+kotlin-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlin-coroutines-test" }
+androidx-test-core = { module = "androidx.test:core", version.ref = "androidx-test-core" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
