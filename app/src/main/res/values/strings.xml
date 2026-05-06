@@ -37,6 +37,7 @@
     <string name="dialogue_cancel">Cancel</string>
 
     <string name="favourites_dialogue_text">Delete all favourites?</string>
+    <string name="favourites_empty">No favourites yet.\nTap the star on any result to save it.</string>
 
     <!-- HELP -->
     <string name="help_text">Type to search, results will appear in real-time.\nClick a star to save a word to or remove from favourites.\nClick the menu button to view favourites and change word sorting from smart ordering (frequency analysis) to pure alphabetical ordering.</string>
