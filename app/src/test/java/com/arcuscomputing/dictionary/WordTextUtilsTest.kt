@@ -30,7 +30,7 @@ class WordTextUtilsTest {
     }
 
     @Test fun `capitalize leaves rest of string unchanged`() {
-        assertEquals("hELLO", WordTextUtils.capitalize("hELLO"))
+        assertEquals("HELLO", WordTextUtils.capitalize("hELLO"))
     }
 
     // --- getStoredDefinition ---
