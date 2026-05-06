@@ -3,16 +3,16 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-        android:id="@+id/menu_alpha_sort"
-        android:icon="@android:drawable/ic_menu_sort_alphabetically"
-        android:title="@string/menu_sort_alpha_asc"
-        app:showAsAction="never" />
+        android:id="@+id/menu_sort_field"
+        android:icon="@drawable/ic_sort_by_alpha"
+        android:title="@string/menu_sort_field"
+        app:showAsAction="always" />
 
     <item
-        android:id="@+id/menu_date_sort"
-        android:icon="@android:drawable/ic_menu_month"
-        android:title="@string/menu_sort_date_asc"
-        app:showAsAction="never" />
+        android:id="@+id/menu_sort_direction"
+        android:icon="@drawable/ic_arrow_downward"
+        android:title="@string/menu_sort_direction"
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/menu_clear_favourites"
