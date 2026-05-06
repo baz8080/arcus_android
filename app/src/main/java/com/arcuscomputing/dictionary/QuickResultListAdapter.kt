@@ -50,7 +50,7 @@ class QuickResultListAdapter(
         val word = getItem(position)
         val b = holder.binding
 
-        b.definitionTvHeadline.text = capitalize(word.word)
+        b.definitionTvHeadline.text = WordTextUtils.capitalize(word.word)
 
         val pos = if (favouritesMode) PartOfSpeech.fromAbbreviation(word.definition) else null
         val def = if (pos != null) word.definition.substringAfter(" ") else word.definition
@@ -58,11 +58,11 @@ class QuickResultListAdapter(
 
         b.definitionTvDefinition.apply {
             movementMethod = LinkMovementMethod.getInstance()
-            setText(capitalize(def), TextView.BufferType.SPANNABLE)
+            setText(WordTextUtils.capitalize(def), TextView.BufferType.SPANNABLE)
             linkifyDefinition(this, def)
         }
 
-        b.definitionTvType.text = capitalize(displayType)
+        b.definitionTvType.text = WordTextUtils.capitalize(displayType)
 
         if (word.synonyms.isNotEmpty()) {
             val synonymText = b.root.context.getString(R.string.synonyms_prefix, word.synonyms)
@@ -74,7 +74,7 @@ class QuickResultListAdapter(
             b.definitionTvSynonyms.visibility = View.GONE
         }
 
-        val storedDef = getStoredDefinition(word)
+        val storedDef = WordTextUtils.getStoredDefinition(word, favouritesMode)
         b.favIcon.setImageResource(starIcon(word.word, storedDef))
         b.favIcon.setOnClickListener {
             val key = word.word to storedDef
@@ -90,12 +90,6 @@ class QuickResultListAdapter(
     private fun starIcon(word: String, definition: String) =
         if ((word to definition) in favourites) R.drawable.ic_star else R.drawable.ic_star_border
 
-    private fun getStoredDefinition(word: WordModel): String {
-        if (favouritesMode) return word.definition
-        val pos = PartOfSpeech.fromLabel(word.type) ?: return word.definition
-        return "${pos.abbreviation} ${word.definition}"
-    }
-
     private fun linkifyDefinition(tv: TextView, definition: String) {
         val span = tv.text as Spannable
         tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, tv.textSize + 1.5f)
@@ -105,9 +99,9 @@ class QuickResultListAdapter(
             val done = spacePos == -1
             if (done) spacePos = definition.length
             val cleaned = definition.substring(currentStart, spacePos)
-                .replace(Regex(CLEAN_PATTERN), " ")
+                .replace(Regex(WordTextUtils.CLEAN_PATTERN), " ")
                 .trim()
-            if (cleaned.length > 3 && cleaned !in SIMPLE_WORDS) {
+            if (WordTextUtils.isLinkableWord(cleaned)) {
                 span.setSpan(object : ClickableSpan() {
                     override fun onClick(widget: View) { callbacks.onWordClick(cleaned) }
                 }, currentStart, spacePos, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
@@ -136,24 +130,12 @@ class QuickResultListAdapter(
     }
 
     companion object {
-        private const val CLEAN_PATTERN = "\\(|\\)|;|\\.|'|`|,|\""
-        private val SIMPLE_WORDS = setOf(
-            "than", "that", "with", "which",
-            "goes", "whose", "what", "where",
-            "when", "they", "from", "your", "into"
-        )
-
         private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<WordModel>() {
             override fun areItemsTheSame(oldItem: WordModel, newItem: WordModel): Boolean =
                 oldItem.word == newItem.word && oldItem.definition == newItem.definition
 
             override fun areContentsTheSame(oldItem: WordModel, newItem: WordModel): Boolean =
                 oldItem == newItem
-        }
-
-        private fun capitalize(str: String?): String {
-            if (str.isNullOrEmpty()) return str ?: ""
-            return str[0].titlecase() + str.substring(1)
         }
     }
 }

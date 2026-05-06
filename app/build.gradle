@@ -55,4 +55,10 @@ dependencies {
     implementation libs.google.material
     implementation libs.timber
     implementation libs.okio
+
+    testImplementation libs.junit
+    testImplementation libs.mockito.kotlin
+    testImplementation libs.robolectric
+    testImplementation libs.kotlin.coroutines.test
+    testImplementation libs.androidx.test.core
 }
