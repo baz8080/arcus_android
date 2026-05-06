@@ -16,6 +16,7 @@ import com.arcuscomputing.dictionarypro.ads.databinding.FavouritesBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+
 class FavouritesActivity : AppCompatActivity(), QuickResultListAdapter.Callbacks {
 
     private lateinit var binding: FavouritesBinding
@@ -54,14 +55,15 @@ class FavouritesActivity : AppCompatActivity(), QuickResultListAdapter.Callbacks
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_favourites, menu)
         optionsMenu = menu
+        updateSortIcons()
         return super.onCreateOptionsMenu(menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             android.R.id.home -> { finish(); true }
-            R.id.menu_alpha_sort -> { handleAlphaSortAction(); true }
-            R.id.menu_date_sort -> { handleDateSortAction(); true }
+            R.id.menu_sort_field -> { handleSortFieldToggle(); true }
+            R.id.menu_sort_direction -> { handleSortDirectionToggle(); true }
             R.id.menu_clear_favourites -> { handleClearFavouritesAction(); true }
             R.id.menu_email_favourites -> { handleEmailFavouritesAction(); true }
             else -> super.onOptionsItemSelected(item)
@@ -75,34 +77,47 @@ class FavouritesActivity : AppCompatActivity(), QuickResultListAdapter.Callbacks
             }
             val favSet = results.map { it.word to it.definition }.toSet()
             resultsAdapter.submit(results, favSet, true)
+            binding.rvResults.scrollToPosition(0)
             val empty = results.isEmpty()
             binding.emptyState.visibility = if (empty) View.VISIBLE else View.GONE
             binding.rvResults.visibility = if (empty) View.GONE else View.VISIBLE
         }
     }
 
-    private fun handleAlphaSortAction() {
-        val item = optionsMenu?.findItem(R.id.menu_alpha_sort) ?: return
-        if (item.title.toString() == getString(R.string.menu_sort_alpha_asc)) {
-            viewModel.sortMethod = SortOrder.ALPHA_ASC
-            item.setTitle(R.string.menu_sort_alpha_desc)
-        } else {
-            viewModel.sortMethod = SortOrder.ALPHA_DESC
-            item.setTitle(R.string.menu_sort_alpha_asc)
+    private fun handleSortFieldToggle() {
+        viewModel.sortMethod = when (viewModel.sortMethod) {
+            SortOrder.ALPHA_ASC -> SortOrder.DATE_ASC
+            SortOrder.ALPHA_DESC -> SortOrder.DATE_DESC
+            SortOrder.DATE_ASC -> SortOrder.ALPHA_ASC
+            SortOrder.DATE_DESC -> SortOrder.ALPHA_DESC
         }
+        updateSortIcons()
         showFavourites()
     }
 
-    private fun handleDateSortAction() {
-        val item = optionsMenu?.findItem(R.id.menu_date_sort) ?: return
-        if (item.title.toString() == getString(R.string.menu_sort_date_asc)) {
-            viewModel.sortMethod = SortOrder.DATE_ASC
-            item.setTitle(R.string.menu_sort_date_desc)
-        } else {
-            viewModel.sortMethod = SortOrder.DATE_DESC
-            item.setTitle(R.string.menu_sort_date_asc)
+    private fun handleSortDirectionToggle() {
+        viewModel.sortMethod = when (viewModel.sortMethod) {
+            SortOrder.ALPHA_ASC -> SortOrder.ALPHA_DESC
+            SortOrder.ALPHA_DESC -> SortOrder.ALPHA_ASC
+            SortOrder.DATE_ASC -> SortOrder.DATE_DESC
+            SortOrder.DATE_DESC -> SortOrder.DATE_ASC
         }
+        updateSortIcons()
         showFavourites()
+    }
+
+    private fun updateSortIcons() {
+        val menu = optionsMenu ?: return
+        val fieldIcon = when (viewModel.sortMethod) {
+            SortOrder.ALPHA_ASC, SortOrder.ALPHA_DESC -> R.drawable.ic_sort_by_alpha
+            SortOrder.DATE_ASC, SortOrder.DATE_DESC -> R.drawable.ic_calendar_today
+        }
+        val directionIcon = when (viewModel.sortMethod) {
+            SortOrder.ALPHA_ASC, SortOrder.DATE_ASC -> R.drawable.ic_arrow_upward
+            SortOrder.ALPHA_DESC, SortOrder.DATE_DESC -> R.drawable.ic_arrow_downward
+        }
+        menu.findItem(R.id.menu_sort_field)?.setIcon(fieldIcon)
+        menu.findItem(R.id.menu_sort_direction)?.setIcon(directionIcon)
     }
 
     private fun handleClearFavouritesAction() {

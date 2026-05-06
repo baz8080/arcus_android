@@ -41,3 +41,4 @@ captures/
 *.keystore
 
 google-services.json
+.claude/

@@ -21,11 +21,8 @@
     <string name="menu_search">Search</string>
     <string name="menu_settings">Settings</string>
     <string name="menu_favourites">Favourites</string>
-    <string name="menu_sort_alpha_asc">Sort by Word (Asc.)</string>
-    <string name="menu_sort_alpha_desc">Sort by Word (Desc.)</string>
-
-    <string name="menu_sort_date_asc">Sort by Date (Asc.)</string>
-    <string name="menu_sort_date_desc">Sort by Date (Desc.)</string>
+    <string name="menu_sort_field">Toggle sort field</string>
+    <string name="menu_sort_direction">Toggle sort direction</string>
 
     <string name="menu_clear_favourites">Clear Favourites</string>
     <string name="menu_email_favourites">Email Favourites</string>
