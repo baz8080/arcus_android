@@ -21,6 +21,7 @@
             </intent-filter>
         </activity>
 
+        <activity android:name="com.arcuscomputing.dictionary.FavouritesActivity" />
         <activity android:name="com.arcuscomputing.dictionary.EditPreferencesActivity" />
     </application>
 
