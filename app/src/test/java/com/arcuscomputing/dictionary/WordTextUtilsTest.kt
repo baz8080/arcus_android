@@ -82,7 +82,7 @@ class WordTextUtilsTest {
         assertTrue(WordTextUtils.isLinkableWord("bark"))
     }
 
-    @Test fun `isLinkableWord boundary: exactly four characters that are not a simple word`() {
+    @Test fun `isLinkableWord at four characters is linkable when not a simple word`() {
         assertTrue(WordTextUtils.isLinkableWord("bark"))
     }
 }
