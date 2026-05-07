@@ -3,7 +3,7 @@ package com.arcuscomputing.dictionary.io
 import android.content.Context
 import androidx.core.content.edit
 import androidx.preference.PreferenceManager
-import com.arcuscomputing.dictionarypro.ads.R
+import com.arcuscomputing.dictionary.reloaded.R
 import okio.buffer
 import okio.sink
 import okio.source

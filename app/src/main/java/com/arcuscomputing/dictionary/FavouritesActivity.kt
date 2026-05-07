@@ -11,8 +11,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.arcuscomputing.dictionary.FavouritesDbHelper.SortOrder
-import com.arcuscomputing.dictionarypro.ads.R
-import com.arcuscomputing.dictionarypro.ads.databinding.FavouritesBinding
+import com.arcuscomputing.dictionary.reloaded.R
+import com.arcuscomputing.dictionary.reloaded.databinding.FavouritesBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext

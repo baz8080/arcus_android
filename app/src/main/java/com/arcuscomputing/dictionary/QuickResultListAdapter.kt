@@ -11,8 +11,8 @@ import android.widget.TextView
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.arcuscomputing.dictionarypro.ads.databinding.DefinitionTableBinding
-import com.arcuscomputing.dictionarypro.ads.R
+import com.arcuscomputing.dictionary.reloaded.databinding.DefinitionTableBinding
+import com.arcuscomputing.dictionary.reloaded.R
 
 class QuickResultListAdapter(
     private val callbacks: Callbacks
