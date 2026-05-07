@@ -13,8 +13,8 @@ import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.arcuscomputing.dictionarypro.ads.R
-import com.arcuscomputing.dictionarypro.ads.databinding.MainBinding
+import com.arcuscomputing.dictionary.reloaded.R
+import com.arcuscomputing.dictionary.reloaded.databinding.MainBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay

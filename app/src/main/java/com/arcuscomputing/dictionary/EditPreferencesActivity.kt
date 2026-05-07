@@ -3,8 +3,8 @@ package com.arcuscomputing.dictionary
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.preference.PreferenceFragmentCompat
-import com.arcuscomputing.dictionarypro.ads.R
-import com.arcuscomputing.dictionarypro.ads.databinding.ActivityPreferencesBinding
+import com.arcuscomputing.dictionary.reloaded.R
+import com.arcuscomputing.dictionary.reloaded.databinding.ActivityPreferencesBinding
 
 class EditPreferencesActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

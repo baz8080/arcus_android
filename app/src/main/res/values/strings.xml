@@ -6,7 +6,7 @@
     <string name="init_text">Arcus Dictionary Pro is initialising.\n\nVerifying data and upgrading file if required.\n\nThis usually takes around 10 seconds for an upgrade or about 2 to 3 seconds otherwise.</string>
     <string name="init_caption">Initialising…</string>
     <string name="no_results">No results for: </string>
-    <string name="exit_message">Press back once more to exit</string>
+
 
     <!-- Prefs -->
     <string name="pref.alpha_sort_title">Alphabetical sorting</string>
@@ -30,14 +30,9 @@
     <!-- Dialogue -->
     <string name="dialogue_yes">Yes</string>
     <string name="dialogue_no">No</string>
-    <string name="dialogue_ok">OK</string>
-    <string name="dialogue_cancel">Cancel</string>
 
     <string name="favourites_dialogue_text">Delete all favourites?</string>
     <string name="favourites_empty">No favourites yet.\nTap the star on any result to save it.</string>
-
-    <!-- HELP -->
-    <string name="help_text">Type to search, results will appear in real-time.\nClick a star to save a word to or remove from favourites.\nClick the menu button to view favourites and change word sorting from smart ordering (frequency analysis) to pure alphabetical ordering.</string>
 
     <!-- Share / email -->
     <string name="synonyms_prefix">Synonyms: %1$s</string>
@@ -46,15 +41,6 @@
     <string name="email_chooser_title">Send mail…</string>
     <string name="email_subject">My Favourites from Arcus Dictionary</string>
 
-    <!-- Toast, i love toast -->
-    <string name="favourites_toast_added"> added to favourites</string>
-    <string name="favourites_toast_removed"> removed from favourites</string>
-
-    <!-- Speech -->
-    <string name="tts_install_header">Install voice data</string>
-    <string name="tts_install_message">In order to listen to pronunciation you must install Google\'s voice data, proceed?</string>
-    <string name="tts_loading_message">Loading speech. May take a few seconds</string>
-    <string name="click_to_link">Click to link</string>
     <string name="click_to_share">Click to share</string>
     <string name="click_to_hear_definition">Click to hear definition</string>
     <string name="click_to_add_to_favourites">Click to add to favourites</string>
